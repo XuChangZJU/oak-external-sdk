@@ -1,4 +1,4 @@
-import { Path, Point } from '../../oak-domain/src/types/Geo';
+import { Path, Point } from 'oak-domain/src/types/Geo';
 
 export class AmapInstance {
     key: string;
