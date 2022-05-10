@@ -2,15 +2,8 @@ import { Path, Point } from 'oak-domain/src/types/Geo';
 
 export class AmapInstance {
     key: string;
-    private static instance: AmapInstance;
     constructor(key: string) {
         this.key = key;
-    }
-    static getInstance(key: string): AmapInstance {
-        if (!AmapInstance.instance || (AmapInstance.instance && AmapInstance.instance.key !== key)) {
-            this.instance = new AmapInstance(key);
-        }
-        return AmapInstance.instance;
     }
     async getDrivingPath(data: Path) {
         const from = data[0];
