@@ -1,4 +1,4 @@
-import { WechatMpInstance } from './WechatMp';
+import { WechatMpInstance } from './service/wechat/WechatMp';
 
 class WechatSDK {
     mpMap: Record<string, WechatMpInstance>;
