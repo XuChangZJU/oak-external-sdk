@@ -1,4 +1,4 @@
-import { AmapInstance } from './Amap';
+import { AmapInstance } from './service/amap/Amap';
 
 class AmapSDK {
     webKeyMap: Record<string, AmapInstance>;
