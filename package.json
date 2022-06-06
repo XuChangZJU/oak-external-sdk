@@ -1,5 +1,5 @@
 {
-  "name": "oak-wechat-sdk",
+  "name": "oak-external-sdk",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
