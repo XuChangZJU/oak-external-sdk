@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import  { Buffer } from 'buffer';
 
-export class WechatMpInstance {
+export class WechatPublicInstance {
     appId: string;
     appSecret: string;
 
@@ -16,7 +16,7 @@ export class WechatMpInstance {
     }
 
     private async access(url: string, init?: RequestInit) {
-        const response = await global.fetch(url, init);
+        const response = await fetch(url, init);
         
         const { headers, status } = response;
         if (![200, 201].includes(status)) {
@@ -46,7 +46,7 @@ export class WechatMpInstance {
     }
 
     async code2Session(code: string) {        
-        const result = await this.access(`https://api.weixin.qq.com/sns/jscode2session?appid=${this.appId}&secret=${this.appSecret}&js_code=${code}&grant_type=authorization_code`);        
+        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`);        
         const { session_key, openid, unionid } = JSON.parse(result);    // 这里微信返回的数据竟然是text/plain
 
         return {
@@ -86,38 +86,5 @@ export class WechatMpInstance {
         }
 
         return data;
-    }
-
-    async getMpUnlimitWxaCode({ scene, page, envVersion, width, autoColor, lineColor, isHyaline }: {
-        scene: string;
-        page: string;
-        envVersion?: string;
-        width?: number;
-        autoColor?: boolean;
-        lineColor?: {
-            r: number;
-            g: number;
-            b: number;
-        };
-        isHyaline?: true;
-    }) {
-        const result = await this.access(`https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=${this.accessToken}`, {
-            method: 'POST',
-            headers: {
-                'Content-type': "application/json",
-                'Accept': 'image/jpg',
-            },
-            body: JSON.stringify({
-                // access_token: this.accessToken,
-                scene,
-                page,
-                env_version: envVersion,
-                width,
-                auto_color: autoColor,
-                line_color: lineColor,
-                is_hyaline: isHyaline,
-            })
-        });
-        return (await result.arrayBuffer()) as ArrayBuffer;
     }
 };
