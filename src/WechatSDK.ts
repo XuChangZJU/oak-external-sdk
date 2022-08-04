@@ -1,10 +1,11 @@
 import { WechatMpInstance } from './service/wechat/WechatMp';
 import { WechatPublicInstance } from './service/wechat/WechatPublic';
+import { WechatWebInstance } from './service/wechat/WechatWeb';
 
 class WechatSDK {
     mpMap: Record<string, WechatMpInstance>;
-    publicMap: Record<string, any>;
-    webMap: Record<string, any>;
+    publicMap: Record<string, WechatPublicInstance>;
+    webMap: Record<string, WechatWebInstance>;
 
     constructor() {
         this.mpMap = {};
@@ -33,6 +34,15 @@ class WechatSDK {
             }
             const instance = new WechatPublicInstance(appId, appSecret);
             Object.assign(this.publicMap, {
+                [appId]: instance,
+            });
+            return instance;
+        } else if (type === 'web') {
+            if (this.webMap[appId]) {
+                return this.publicMap[appId];
+            }
+            const instance = new WechatWebInstance(appId, appSecret);
+            Object.assign(this.webMap, {
                 [appId]: instance,
             });
             return instance;
