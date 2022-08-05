@@ -54,3 +54,6 @@ class WechatSDK {
 
 const SDK = new WechatSDK();
 export default SDK;
+
+export { WechatMpInstance, WechatWebInstance, WechatPublicInstance };
+
