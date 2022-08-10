@@ -15,7 +15,10 @@ export class WechatPublicInstance {
         this.refreshAccessToken();
     }
 
-    private async access(url: string, init?: RequestInit) {
+    private async access(url: string, mockData: any, init?: RequestInit) {
+        if (process.env.NODE_ENV === 'development') {
+            return mockData;
+        }
         const response = await global.fetch(url, init);
         
         const { headers, status } = response;
@@ -46,8 +49,11 @@ export class WechatPublicInstance {
     }
 
     async code2Session(code: string) {        
-        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`);        
-        const { session_key, openid, unionid } = JSON.parse(result);    // 这里微信返回的数据竟然是text/plain
+        const result = await this.access(
+            `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`,
+            { session_key: 'aaa', openid: code, unionid: code }
+        );
+        const { session_key, openid, unionid } = typeof result === 'string' ? JSON.parse(result) : result; // 这里微信返回的数据有时候竟然是text/plain
 
         return {
             sessionKey: session_key as string,
@@ -57,7 +63,10 @@ export class WechatPublicInstance {
     }
 
     private async refreshAccessToken() {
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`);
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`,
+            { access_token: 'mockToken', expires_in: 3600 * 1000 }
+        );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         // 生成下次刷新的定时器
