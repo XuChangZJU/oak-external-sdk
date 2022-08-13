@@ -2,12 +2,17 @@
     "name": "oak-external-sdk",
     "version": "1.0.0",
     "description": "",
+    "author": {
+        "name": "XuChang"
+    },
     "main": "src/index",
+    "files": [
+        "lib/**/*"
+    ],
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "tsc"
     },
-    "author": "XuChang",
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^17.0.31"
