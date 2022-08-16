@@ -5,7 +5,7 @@
     "author": {
         "name": "XuChang"
     },
-    "main": "src/index",
+    "main": "lib/index.js",
     "files": [
         "lib/**/*"
     ],
