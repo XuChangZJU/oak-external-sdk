@@ -1,11 +1,11 @@
 {
     "name": "oak-external-sdk",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "",
     "author": {
         "name": "XuChang"
     },
-    "main": "src/index",
+    "main": "lib/index",
     "files": [
         "lib/**/*"
     ],
@@ -15,6 +15,9 @@
     },
     "license": "ISC",
     "devDependencies": {
-        "@types/node": "^17.0.31"
+        "@types/node": "^17.0.31",
+        "ts-node": "~10.9.1",
+        "tslib": "^2.4.0",
+        "typescript": "~4.7.4"
     }
 }
