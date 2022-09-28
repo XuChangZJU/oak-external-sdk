@@ -29,6 +29,36 @@ export declare class QiniuCloudInstance {
      * @returns
      */
     getLiveToken(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, host: string, rawQuery?: string, contentType?: string, bodyStr?: string): string;
+    getLiveStream(hub: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', streamTitle: string, host: string, publishDomain: string, playDomain: string, publishKey: string, playKey: string, expireAt: number): Promise<{
+        streamTitle: string;
+        hub: string;
+        rtmpPushUrl: string;
+        rtmpPlayUrl: string;
+        pcPushUrl: string;
+        streamKey: string;
+        expireAt: number;
+    }>;
+    /**
+     * 计算直播流地址相关信息
+     * @param publishDomain
+     * @param playDomain
+     * @param hub
+     * @param publishKey
+     * @param playKey
+     * @param streamTitle
+     * @param expireAt
+     * @returns
+     */
+    getStreamObj(publishDomain: string, playDomain: string, hub: string, publishKey: string, playKey: string, streamTitle: string, expireAt: number): {
+        streamTitle: string;
+        hub: string;
+        rtmpPushUrl: string;
+        rtmpPlayUrl: string;
+        pcPushUrl: string;
+        streamKey: string;
+        expireAt: number;
+    };
+    getPlayBackUrl(hub: string, playBackDomain: string, streamTitle: string, start: number, end: number, method: 'GET' | 'POST' | 'PUT' | 'DELETE', host: string, rawQuery?: string): Promise<string>;
     private getToken;
     private base64ToUrlSafe;
     private hmacSha1;
