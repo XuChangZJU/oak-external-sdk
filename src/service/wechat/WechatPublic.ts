@@ -153,6 +153,11 @@ export class WechatPublicInstance {
 
         const result = await this.access(
             `https://api.weixin.qq.com/cgi-bin/qrcode/create??access_token=${this.accessToken}`,
+            {
+                ticket: `ticket${Date.now()}`,
+                url: `http://mock/q/${scene}`,
+                expireSeconds: expireSeconds,
+            },
             myInit
         );
 
