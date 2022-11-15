@@ -12,4 +12,14 @@ export declare class WechatPublicInstance {
     }>;
     private refreshAccessToken;
     decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
+    getQrCode(options: {
+        sceneId?: number;
+        sceneStr?: string;
+        expireSeconds?: number;
+        isPermanent?: boolean;
+    }): Promise<{
+        ticket: any;
+        url: any;
+        expireSeconds: any;
+    }>;
 }
