@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import  { Buffer } from 'buffer';
+import { Buffer } from 'buffer';
 
 export class WechatPublicInstance {
     appId: string;
@@ -116,11 +116,11 @@ export class WechatPublicInstance {
         }
         const scene = sceneId
             ? {
-                  scene_id: sceneId,
-              }
+                scene_id: sceneId,
+            }
             : {
-                  scene_str: sceneStr,
-              };
+                scene_str: sceneStr,
+            };
         let actionName = sceneId ? 'QR_SCENE' : 'QR_STR_SCENE';
         let myInit = {
             method: 'POST',
@@ -166,5 +166,106 @@ export class WechatPublicInstance {
             url: result.url,
             expireSeconds: result.expire_seconds,
         };
+    }
+    async sendTemplateMessage(options: {
+        openId: string,
+        templateId: string,
+        url?: string,
+        data: Object,
+        miniProgram?: {
+            appid: string,
+            pagepath: string,
+        },
+        clientMsgId?: string,
+    }) {
+        const { openId, templateId, url, data, miniProgram, clientMsgId } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                touser: openId,
+                template_id: templateId,
+                url,
+                miniProgram,
+                client_msg_id: clientMsgId,
+                data,
+            }),
+        };
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${this.accessToken}`,
+            {
+                errcode: 0,
+                errmsg: 'ok',
+                msgid: Date.now(),
+            },
+            myInit
+        );
+        const { errcode } = result;
+        if (errcode === 0) {
+            return Object.assign(
+                { success: true },
+                result
+            )
+        }
+        return Object.assign(
+            { success: false },
+            result,
+        )
+    }
+    async batchGetArticle(options: {
+        indexFrom?: number,
+        count: number,
+        noContent?: 0 | 1,
+    }) {
+        const { indexFrom, count, noContent } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                offset: indexFrom,
+                count,
+                no_content: noContent,
+            }),
+        };
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/freepublish/batchget?access_token=${this.accessToken}`,
+            {
+                "total_count": 1,
+                "item_count": 1,
+                "item": [
+                    {
+                        "article_id": 'test',
+                        "content": {
+                            "news_item": [
+                                {
+                                    "title": '测试文章',
+                                    "author": '测试作者',
+                                    "digest": '测试摘要',
+                                    "content": '测试内容',
+                                    "content_source_url": '',
+                                    "thumb_media_id": 'TEST_MEDIA_ID',
+                                    "show_cover_pic": 1,
+                                    "need_open_comment": 0,
+                                    "only_fans_can_comment": 0,
+                                    "url": 'TEST_ARTICLE_URL',
+                                    "is_deleted": false
+                                }
+                            ]
+                        },
+                        "update_time": Date.now(),
+                    },
+                ]
+            },
+            myInit
+        );
+        const { errcode } = result;
+        if (!errcode) {
+            return result;
+        }
+        throw new Error(JSON.stringify(result));
     }
 };
