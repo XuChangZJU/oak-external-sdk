@@ -219,7 +219,7 @@ export class WechatPublicInstance {
         count: number,
         noContent?: 0 | 1,
     }) {
-        const { indexFrom, offset, noContent } = options;
+        const { offset, count, noContent } = options;
         const myInit = {
             method: 'POST',
             headers: {
