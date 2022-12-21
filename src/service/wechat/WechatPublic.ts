@@ -215,18 +215,18 @@ export class WechatPublicInstance {
         )
     }
     async batchGetArticle(options: {
-        indexFrom?: number,
+        offset?: number,
         count: number,
         noContent?: 0 | 1,
     }) {
-        const { indexFrom, count, noContent } = options;
+        const { indexFrom, offset, noContent } = options;
         const myInit = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                offset: indexFrom,
+                offset,
                 count,
                 no_content: noContent,
             }),
