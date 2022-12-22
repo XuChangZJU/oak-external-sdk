@@ -22,4 +22,20 @@ export declare class WechatPublicInstance {
         url: any;
         expireSeconds: any;
     }>;
+    sendTemplateMessage(options: {
+        openId: string;
+        templateId: string;
+        url?: string;
+        data: Object;
+        miniProgram?: {
+            appid: string;
+            pagepath: string;
+        };
+        clientMsgId?: string;
+    }): Promise<any>;
+    batchGetArticle(options: {
+        offset?: number;
+        count: number;
+        noContent?: 0 | 1;
+    }): Promise<any>;
 }
