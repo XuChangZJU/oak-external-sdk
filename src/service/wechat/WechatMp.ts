@@ -5,14 +5,26 @@ export class WechatMpInstance {
     appId: string;
     appSecret: string;
 
-    accessToken?: string;
-    refreshAccessTokenHandler?: any;
+    private accessToken?: string;
+    private refreshAccessTokenHandler?: any;
 
     constructor(appId: string, appSecret: string) {
         this.appId = appId;
         this.appSecret = appSecret;
 
         this.refreshAccessToken();
+    }
+
+    private async getAccessToken() {
+        while (true) {
+            if (this.accessToken) {
+                return this.accessToken;
+            }
+
+            await new Promise(
+                (resolve) => setTimeout(() => resolve(0), 500)
+            );
+        }
     }
 
     private async access(url: string, init?: RequestInit) {
@@ -101,7 +113,8 @@ export class WechatMpInstance {
         };
         isHyaline?: true;
     }) {
-        const result = await this.access(`https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=${this.accessToken}`, {
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=${token}`, {
             method: 'POST',
             headers: {
                 'Content-type': "application/json",

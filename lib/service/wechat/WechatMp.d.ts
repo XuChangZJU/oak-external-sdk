@@ -1,9 +1,10 @@
 export declare class WechatMpInstance {
     appId: string;
     appSecret: string;
-    accessToken?: string;
-    refreshAccessTokenHandler?: any;
+    private accessToken?;
+    private refreshAccessTokenHandler?;
     constructor(appId: string, appSecret: string);
+    private getAccessToken;
     private access;
     code2Session(code: string): Promise<{
         sessionKey: string;
