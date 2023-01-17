@@ -39,7 +39,7 @@ class WechatSDK {
             return instance;
         } else if (type === 'web') {
             if (this.webMap[appId]) {
-                return this.publicMap[appId];
+                return this.webMap[appId];
             }
             const instance = new WechatWebInstance(appId, appSecret);
             Object.assign(this.webMap, {

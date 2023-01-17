@@ -1,3 +1,5 @@
+require('isomorphic-fetch');
+
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 
@@ -19,7 +21,7 @@ export class WechatPublicInstance {
         if (process.env.NODE_ENV === 'development') {
             return mockData;
         }
-        const response = await global.fetch(url, init);
+        const response = await fetch(url, init);
 
         const { headers, status } = response;
         if (![200, 201].includes(status)) {
@@ -116,11 +118,11 @@ export class WechatPublicInstance {
         }
         const scene = sceneId
             ? {
-                scene_id: sceneId,
-            }
+                  scene_id: sceneId,
+              }
             : {
-                scene_str: sceneStr,
-            };
+                  scene_str: sceneStr,
+              };
         let actionName = sceneId ? 'QR_SCENE' : 'QR_STR_SCENE';
         let myInit = {
             method: 'POST',
@@ -152,7 +154,7 @@ export class WechatPublicInstance {
         }
 
         const result = await this.access(
-            `https://api.weixin.qq.com/cgi-bin/qrcode/create??access_token=${this.accessToken}`,
+            `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${this.accessToken}`,
             {
                 ticket: `ticket${Date.now()}`,
                 url: `http://mock/q/${sceneId ? sceneId : sceneStr}`,
@@ -168,17 +170,18 @@ export class WechatPublicInstance {
         };
     }
     async sendTemplateMessage(options: {
-        openId: string,
-        templateId: string,
-        url?: string,
-        data: Object,
+        openId: string;
+        templateId: string;
+        url?: string;
+        data: Object;
         miniProgram?: {
-            appid: string,
-            pagepath: string,
-        },
-        clientMsgId?: string,
+            appid: string;
+            pagepath: string;
+        };
+        clientMsgId?: string;
     }) {
-        const { openId, templateId, url, data, miniProgram, clientMsgId } = options;
+        const { openId, templateId, url, data, miniProgram, clientMsgId } =
+            options;
         const myInit = {
             method: 'POST',
             headers: {
@@ -204,20 +207,14 @@ export class WechatPublicInstance {
         );
         const { errcode } = result;
         if (errcode === 0) {
-            return Object.assign(
-                { success: true },
-                result
-            )
+            return Object.assign({ success: true }, result);
         }
-        return Object.assign(
-            { success: false },
-            result,
-        )
+        return Object.assign({ success: false }, result);
     }
     async batchGetArticle(options: {
-        offset?: number,
-        count: number,
-        noContent?: 0 | 1,
+        offset?: number;
+        count: number;
+        noContent?: 0 | 1;
     }) {
         const { offset, count, noContent } = options;
         const myInit = {
@@ -234,31 +231,31 @@ export class WechatPublicInstance {
         const result = await this.access(
             `https://api.weixin.qq.com/cgi-bin/freepublish/batchget?access_token=${this.accessToken}`,
             {
-                "total_count": 1,
-                "item_count": 1,
-                "item": [
+                total_count: 1,
+                item_count: 1,
+                item: [
                     {
-                        "article_id": 'test',
-                        "content": {
-                            "news_item": [
+                        article_id: 'test',
+                        content: {
+                            news_item: [
                                 {
-                                    "title": '测试文章',
-                                    "author": '测试作者',
-                                    "digest": '测试摘要',
-                                    "content": '测试内容',
-                                    "content_source_url": '',
-                                    "thumb_media_id": 'TEST_MEDIA_ID',
-                                    "show_cover_pic": 1,
-                                    "need_open_comment": 0,
-                                    "only_fans_can_comment": 0,
-                                    "url": 'TEST_ARTICLE_URL',
-                                    "is_deleted": false
-                                }
-                            ]
+                                    title: '测试文章',
+                                    author: '测试作者',
+                                    digest: '测试摘要',
+                                    content: '测试内容',
+                                    content_source_url: '',
+                                    thumb_media_id: 'TEST_MEDIA_ID',
+                                    show_cover_pic: 1,
+                                    need_open_comment: 0,
+                                    only_fans_can_comment: 0,
+                                    url: 'TEST_ARTICLE_URL',
+                                    is_deleted: false,
+                                },
+                            ],
                         },
-                        "update_time": Date.now(),
+                        update_time: Date.now(),
                     },
-                ]
+                ],
             },
             myInit
         );
@@ -268,4 +265,4 @@ export class WechatPublicInstance {
         }
         throw new Error(JSON.stringify(result));
     }
-};
+}

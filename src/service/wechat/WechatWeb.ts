@@ -1,5 +1,7 @@
+require('isomorphic-fetch');
+
 import crypto from 'crypto';
-import  { Buffer } from 'buffer';
+import { Buffer } from 'buffer';
 
 export class WechatWebInstance {
     appId: string;
@@ -19,7 +21,7 @@ export class WechatWebInstance {
         if (process.env.NODE_ENV === 'development') {
             return mockData;
         }
-        const response = await global.fetch(url, init);
+        const response = await fetch(url, init);
 
         const { headers, status } = response;
         if (![200, 201].includes(status)) {
@@ -56,7 +58,8 @@ export class WechatWebInstance {
             `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`,
             { session_key: 'aaa', openid: code, unionid: code }
         );
-        const { session_key, openid, unionid } = typeof result === 'string' ? JSON.parse(result) : result; // 这里微信返回的数据有时候竟然是text/plain
+        const { session_key, openid, unionid } =
+            typeof result === 'string' ? JSON.parse(result) : result; // 这里微信返回的数据有时候竟然是text/plain
 
         return {
             sessionKey: session_key as string,
@@ -102,4 +105,4 @@ export class WechatWebInstance {
 
         return data;
     }
-};
+}

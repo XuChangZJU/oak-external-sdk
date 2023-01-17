@@ -13,7 +13,7 @@ export declare class WechatMpInstance {
     }>;
     private refreshAccessToken;
     decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
-    getMpUnlimitWxaCode({ scene, page, envVersion, width, autoColor, lineColor, isHyaline }: {
+    getMpUnlimitWxaCode({ scene, page, envVersion, width, autoColor, lineColor, isHyaline, }: {
         scene: string;
         page: string;
         envVersion?: string;

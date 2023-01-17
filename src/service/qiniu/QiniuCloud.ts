@@ -1,3 +1,5 @@
+require('isomorphic-fetch');
+
 import crypto from 'crypto';
 import { Md5 } from 'ts-md5';
 import { Buffer } from 'buffer';
@@ -14,13 +16,18 @@ export class QiniuCloudInstance {
     /**
      * 计算客户端上传七牛需要的凭证
      * https://developer.qiniu.com/kodo/1312/upload
-     * @param uploadHost 
-     * @param domain 
-     * @param bucket 
-     * @param key 
-     * @returns 
+     * @param uploadHost
+     * @param domain
+     * @param bucket
+     * @param key
+     * @returns
      */
-    getUploadInfo(uploadHost: string, domain: string, bucket: string, key?: string) {
+    getUploadInfo(
+        uploadHost: string,
+        domain: string,
+        bucket: string,
+        key?: string
+    ) {
         try {
             const scope = key ? `${bucket}:${key}` : bucket;
             const uploadToken = this.getToken(scope);
@@ -38,31 +45,42 @@ export class QiniuCloudInstance {
 
     /**
      * 计算直播需要的token
-     * @param method 
-     * @param path 
-     * @param host 
-     * @param rawQuery 
-     * @param contentType 
-     * @param bodyStr 
-     * @returns 
+     * @param method
+     * @param path
+     * @param host
+     * @param rawQuery
+     * @param contentType
+     * @param bodyStr
+     * @returns
      */
-    getLiveToken(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, host: string, rawQuery?: string, contentType?: string, bodyStr?: string) {
+    getLiveToken(
+        method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+        path: string,
+        host: string,
+        rawQuery?: string,
+        contentType?: string,
+        bodyStr?: string
+    ) {
         // 1. 添加 Path
-        let data = `${method} ${path}`
+        let data = `${method} ${path}`;
         if (rawQuery) {
-            data += `?${rawQuery}`
+            data += `?${rawQuery}`;
         }
-        data += `\nHost: ${host}`
+        data += `\nHost: ${host}`;
         if (contentType) {
-            data += `\nContent-Type: ${contentType}`
+            data += `\nContent-Type: ${contentType}`;
         }
-        data += "\n\n"
-        if (bodyStr && contentType && contentType !== "application/octet-stream") {
+        data += '\n\n';
+        if (
+            bodyStr &&
+            contentType &&
+            contentType !== 'application/octet-stream'
+        ) {
             data += bodyStr;
         }
         const sign = this.hmacSha1(data, this.secretKey);
         const encodedSign = this.base64ToUrlSafe(sign);
-        const toke = "Qiniu " + this.accessKey + ":" + encodedSign;
+        const toke = 'Qiniu ' + this.accessKey + ':' + encodedSign;
         return toke;
     }
 
@@ -75,7 +93,8 @@ export class QiniuCloudInstance {
         playDomain: string,
         publishKey: string,
         playKey: string,
-        expireAt: number) {
+        expireAt: number
+    ) {
         // 七牛创建直播流接口路径
         const path = `/v2/hubs/${hub}/streams`;
         // 如果用户没给streamTitle，那么随机生成一个
@@ -85,7 +104,7 @@ export class QiniuCloudInstance {
         }
         const bodyStr = JSON.stringify({
             key,
-        })
+        });
         const contentType = 'application/json';
         const token = this.getLiveToken(method, path, host);
 
@@ -99,20 +118,28 @@ export class QiniuCloudInstance {
             body: bodyStr,
             mode: 'no-cors',
         });
-        const obj = this.getStreamObj(publishDomain, playDomain, hub, publishKey, playKey, streamTitle, expireAt);
+        const obj = this.getStreamObj(
+            publishDomain,
+            playDomain,
+            hub,
+            publishKey,
+            playKey,
+            streamTitle,
+            expireAt
+        );
         return obj;
     }
 
     /**
      * 计算直播流地址相关信息
-     * @param publishDomain 
-     * @param playDomain 
-     * @param hub 
-     * @param publishKey 
-     * @param playKey 
-     * @param streamTitle 
-     * @param expireAt 
-     * @returns 
+     * @param publishDomain
+     * @param playDomain
+     * @param hub
+     * @param publishKey
+     * @param playKey
+     * @param streamTitle
+     * @param expireAt
+     * @returns
      */
     getStreamObj(
         publishDomain: string,
@@ -126,14 +153,16 @@ export class QiniuCloudInstance {
         const signStr = `/${hub}/${streamTitle}?expire=${expireAt}`;
         const sourcePath = `/${hub}/${streamTitle}`;
         const token = this.base64ToUrlSafe(this.hmacSha1(signStr, publishKey));
-        const rtmpPushUrl = `rtmp://${publishDomain}${signStr}&token=${token}`
+        const rtmpPushUrl = `rtmp://${publishDomain}${signStr}&token=${token}`;
         // 生成播放地址
         const t = expireAt.toString(16).toLowerCase();
-        const playSign = Md5.hashStr(playKey + sourcePath + t).toString().toLowerCase();
+        const playSign = Md5.hashStr(playKey + sourcePath + t)
+            .toString()
+            .toLowerCase();
         const rtmpPlayUrl = `https://${playDomain}${sourcePath}.m3u8?sign=${playSign}&t=${t}`;
         // obs推流需要的地址和串流密钥
         const pcPushUrl = `rtmp://${publishDomain}/${hub}/`;
-        const streamKey = `${streamTitle}?expire=${expireAt}&token=${token}`
+        const streamKey = `${streamTitle}?expire=${expireAt}&token=${token}`;
         return {
             streamTitle,
             hub,
@@ -145,17 +174,32 @@ export class QiniuCloudInstance {
         };
     }
 
-    async getPlayBackUrl(hub: string, playBackDomain: string, streamTitle: string, start: number, end: number, method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-        host: string, rawQuery?: string) {
+    async getPlayBackUrl(
+        hub: string,
+        playBackDomain: string,
+        streamTitle: string,
+        start: number,
+        end: number,
+        method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+        host: string,
+        rawQuery?: string
+    ) {
         const encodeStreamTitle = this.base64ToUrlSafe(streamTitle);
         const path = `/v2/hubs/${hub}/streams/${encodeStreamTitle}/saveas`;
         const bodyStr = JSON.stringify({
             fname: streamTitle,
             start,
             end,
-        })
+        });
         const contentType = 'application/json';
-        const token = this.getLiveToken(method, path, host, rawQuery, contentType, bodyStr);
+        const token = this.getLiveToken(
+            method,
+            path,
+            host,
+            rawQuery,
+            contentType,
+            bodyStr
+        );
 
         const url = `https://pili.qiniuapi.com${path}`;
         await fetch(url, {
