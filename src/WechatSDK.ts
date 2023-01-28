@@ -47,7 +47,7 @@ class WechatSDK {
             });
             return instance;
         } else {
-            throw new Error('public not implemented');
+            throw new Error(`${type} not implemented`);
         }
     }
 }
