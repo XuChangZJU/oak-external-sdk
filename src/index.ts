@@ -16,3 +16,5 @@ export {
     TencentSmsInstance,
     AliSmsInstance,
 };
+
+export * from './types';
