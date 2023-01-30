@@ -17,6 +17,16 @@ export class WechatWebInstance {
         this.refreshAccessToken();
     }
 
+    private async getAccessToken() {
+        while (true) {
+            if (this.accessToken) {
+                return this.accessToken;
+            }
+
+            await new Promise((resolve) => setTimeout(() => resolve(0), 500));
+        }
+    }
+
     private async access(url: string, mockData: any, init?: RequestInit) {
         if (process.env.NODE_ENV === 'development') {
             return mockData;

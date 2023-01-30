@@ -154,4 +154,5 @@ export class WechatMpInstance {
         );
         return (await result.arrayBuffer()) as ArrayBuffer;
     }
+
 }

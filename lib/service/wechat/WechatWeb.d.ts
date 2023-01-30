@@ -4,6 +4,7 @@ export declare class WechatWebInstance {
     accessToken?: string;
     refreshAccessTokenHandler?: any;
     constructor(appId: string, appSecret: string);
+    private getAccessToken;
     private access;
     code2Session(code: string): Promise<{
         sessionKey: string;

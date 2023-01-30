@@ -34,6 +34,16 @@ export class WechatPublicInstance {
         this.refreshAccessToken();
     }
 
+    private async getAccessToken() {
+        while (true) {
+            if (this.accessToken) {
+                return this.accessToken;
+            }
+
+            await new Promise((resolve) => setTimeout(() => resolve(0), 500));
+        }
+    }
+
     private async access(url: string, mockData: any, init?: RequestInit) {
         if (process.env.NODE_ENV === 'development') {
             return mockData;
@@ -169,9 +179,9 @@ export class WechatPublicInstance {
                 }),
             };
         }
-
+        const token = await this.getAccessToken();
         const result = await this.access(
-            `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${this.accessToken}`,
+            `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${token}`,
             {
                 ticket: `ticket${Date.now()}`,
                 url: `http://mock/q/${sceneId ? sceneId : sceneStr}`,
@@ -213,8 +223,9 @@ export class WechatPublicInstance {
                 data,
             }),
         };
+        const token = await this.getAccessToken();
         const result = await this.access(
-            `https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${this.accessToken}`,
+            `https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`,
             {
                 errcode: 0,
                 errmsg: 'ok',
@@ -276,8 +287,9 @@ export class WechatPublicInstance {
                 throw new Error('当前消息类型暂不支持')
             }
         }
+        const token = await this.getAccessToken();
         const result = await this.access(
-            `https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${this.accessToken}`,
+            `https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${token}`,
             {
                 errcode: 0,
                 errmsg: 'ok',
@@ -307,8 +319,9 @@ export class WechatPublicInstance {
                 no_content: noContent,
             }),
         };
+        const token = await this.getAccessToken();
         const result = await this.access(
-            `https://api.weixin.qq.com/cgi-bin/freepublish/batchget?access_token=${this.accessToken}`,
+            `https://api.weixin.qq.com/cgi-bin/freepublish/batchget?access_token=${token}`,
             {
                 total_count: 1,
                 item_count: 1,
