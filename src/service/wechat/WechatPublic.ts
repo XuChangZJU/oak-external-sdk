@@ -2,6 +2,23 @@ require('isomorphic-fetch');
 
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
+// 目前先支持text和news, 其他type文档：https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Service_Center_messages.html
+// type ServeMessageType = 'text' | 'news' | 'mpnews' | 'mpnewsarticle' | 'image' | 'voice' | 'video' | 'music' | 'msgmenu';/
+type TextServeMessageOption = {
+    openId: string,
+    type: 'text',
+    content: string,
+}
+type NewsServeMessageOption = {
+    openId: string,
+    type: 'news',
+    title: string,
+    description?: string,
+    url: string,
+    picurl?: string,
+}
+
+type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption;
 
 export class WechatPublicInstance {
     appId: string;
@@ -118,11 +135,11 @@ export class WechatPublicInstance {
         }
         const scene = sceneId
             ? {
-                  scene_id: sceneId,
-              }
+                scene_id: sceneId,
+            }
             : {
-                  scene_str: sceneStr,
-              };
+                scene_str: sceneStr,
+            };
         let actionName = sceneId ? 'QR_SCENE' : 'QR_STR_SCENE';
         let myInit = {
             method: 'POST',
@@ -202,6 +219,68 @@ export class WechatPublicInstance {
                 errcode: 0,
                 errmsg: 'ok',
                 msgid: Date.now(),
+            },
+            myInit
+        );
+        const { errcode } = result;
+        if (errcode === 0) {
+            return Object.assign({ success: true }, result);
+        }
+        return Object.assign({ success: false }, result);
+    }
+    async sendServeMessage(options: ServeMessageOption) {
+        const { openId, type } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        };
+        switch (type) {
+            case 'text': {
+                Object.assign(
+                    myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'text',
+                        text: {
+                            content: options.content,
+                        },
+                    }),
+                }
+                );
+                break;
+            }
+            case 'news': {
+                Object.assign(
+                    myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'news',
+                        news: {
+                            articles: [
+                                {
+                                    title: options.title,
+                                    description: options.description,
+                                    url: options.url,
+                                    picurl: options.picurl
+                                }
+                            ]
+                        },
+                    }),
+                }
+                );
+                break;
+            }
+            default: {
+                throw new Error('当前消息类型暂不支持')
+            }
+        }
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${this.accessToken}`,
+            {
+                errcode: 0,
+                errmsg: 'ok',
             },
             myInit
         );
