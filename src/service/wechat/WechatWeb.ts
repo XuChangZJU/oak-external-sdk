@@ -1,5 +1,4 @@
-require('isomorphic-fetch');
-
+require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 

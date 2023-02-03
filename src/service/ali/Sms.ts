@@ -1,5 +1,4 @@
-// import Core from '@alicloud/pop-core/lib/rpc';
-//todo 引入阿里云的库 在前端跑的时候会出现fs模块不存在
+import Core from '@alicloud/pop-core/lib/rpc';
 
 type SendSmsRequest = {
     PhoneNumbers: string[];
@@ -23,7 +22,7 @@ export class AliSmsInstance {
     regionId: string;
     endpoint: string;
     apiVersion: string;
-    // client: Core;
+    client: Core;
 
     constructor(
         accessKeyId: string,
@@ -38,12 +37,12 @@ export class AliSmsInstance {
         this.endpoint = endpoint;
         this.apiVersion = apiVersion;
 
-        // this.client = new Core({
-        //     accessKeyId: this.accessKeyId,
-        //     accessKeySecret: this.accessKeySecret,
-        //     endpoint: this.endpoint || 'dysmsapi.aliyuncs.com',
-        //     apiVersion: this.apiVersion,
-        // });
+        this.client = new Core({
+            accessKeyId: this.accessKeyId,
+            accessKeySecret: this.accessKeySecret,
+            endpoint: this.endpoint || 'dysmsapi.aliyuncs.com',
+            apiVersion: this.apiVersion,
+        });
     }
 
     async sendSms(params: SendSmsRequest) {

@@ -1,3 +1,4 @@
+import Core from '@alicloud/pop-core/lib/rpc';
 declare type SendSmsRequest = {
     PhoneNumbers: string[];
     TemplateCode: string;
@@ -12,6 +13,7 @@ export declare class AliSmsInstance {
     regionId: string;
     endpoint: string;
     apiVersion: string;
+    client: Core;
     constructor(accessKeyId: string, accessKeySecret: string, regionId: string, endpoint: string, apiVersion: string);
     sendSms(params: SendSmsRequest): Promise<void>;
 }

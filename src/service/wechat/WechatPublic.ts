@@ -1,22 +1,21 @@
-require('isomorphic-fetch');
-
+require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 // 目前先支持text和news, 其他type文档：https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Service_Center_messages.html
 // type ServeMessageType = 'text' | 'news' | 'mpnews' | 'mpnewsarticle' | 'image' | 'voice' | 'video' | 'music' | 'msgmenu';/
 type TextServeMessageOption = {
-    openId: string,
-    type: 'text',
-    content: string,
-}
+    openId: string;
+    type: 'text';
+    content: string;
+};
 type NewsServeMessageOption = {
-    openId: string,
-    type: 'news',
-    title: string,
-    description?: string,
-    url: string,
-    picurl?: string,
-}
+    openId: string;
+    type: 'news';
+    title: string;
+    description?: string;
+    url: string;
+    picurl?: string;
+};
 
 type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption;
 
@@ -145,11 +144,11 @@ export class WechatPublicInstance {
         }
         const scene = sceneId
             ? {
-                scene_id: sceneId,
-            }
+                  scene_id: sceneId,
+              }
             : {
-                scene_str: sceneStr,
-            };
+                  scene_str: sceneStr,
+              };
         let actionName = sceneId ? 'QR_SCENE' : 'QR_STR_SCENE';
         let myInit = {
             method: 'POST',
@@ -245,12 +244,11 @@ export class WechatPublicInstance {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
         };
         switch (type) {
             case 'text': {
-                Object.assign(
-                    myInit, {
+                Object.assign(myInit, {
                     body: JSON.stringify({
                         touser: openId,
                         msgtype: 'text',
@@ -258,13 +256,11 @@ export class WechatPublicInstance {
                             content: options.content,
                         },
                     }),
-                }
-                );
+                });
                 break;
             }
             case 'news': {
-                Object.assign(
-                    myInit, {
+                Object.assign(myInit, {
                     body: JSON.stringify({
                         touser: openId,
                         msgtype: 'news',
@@ -274,17 +270,16 @@ export class WechatPublicInstance {
                                     title: options.title,
                                     description: options.description,
                                     url: options.url,
-                                    picurl: options.picurl
-                                }
-                            ]
+                                    picurl: options.picurl,
+                                },
+                            ],
                         },
                     }),
-                }
-                );
+                });
                 break;
             }
             default: {
-                throw new Error('当前消息类型暂不支持')
+                throw new Error('当前消息类型暂不支持');
             }
         }
         const token = await this.getAccessToken();

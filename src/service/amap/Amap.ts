@@ -1,4 +1,4 @@
-require('isomorphic-fetch');
+require('../../fetch');
 
 export class AmapInstance {
     key: string;

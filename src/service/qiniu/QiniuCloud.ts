@@ -1,5 +1,4 @@
-require('isomorphic-fetch');
-
+require('../../fetch');
 import crypto from 'crypto';
 import { Md5 } from 'ts-md5';
 import { Buffer } from 'buffer';

@@ -1,0 +1,1 @@
+global.fetch = global.fetch;
