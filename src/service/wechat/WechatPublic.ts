@@ -47,7 +47,7 @@ export class WechatPublicInstance {
         if (process.env.NODE_ENV === 'development') {
             return mockData;
         }
-        const response = await fetch(url, init);
+        const response = await global.fetch(url, init);
 
         const { headers, status } = response;
         if (![200, 201].includes(status)) {

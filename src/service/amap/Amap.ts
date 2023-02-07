@@ -15,7 +15,7 @@ export class AmapInstance {
         )},${from[1].toFixed(6)}&destination=${to[0].toFixed(
             6
         )},${to[1].toFixed(6)}&strategy=10&key=${this.key}`;
-        const result = await fetch(url);
+        const result = await global.fetch(url);
         const jsonData = await result.json();
         if (jsonData.status !== '1') {
             throw new Error(JSON.stringify(jsonData));

@@ -108,7 +108,7 @@ export class QiniuCloudInstance {
         const token = this.getLiveToken(method, path, host);
 
         const url = `https://pili.qiniuapi.com/v2/hubs/${hub}/streams`;
-        await fetch(url, {
+        await global.fetch(url, {
             method: 'POST',
             headers: {
                 Authorization: token,
@@ -201,7 +201,7 @@ export class QiniuCloudInstance {
         );
 
         const url = `https://pili.qiniuapi.com${path}`;
-        await fetch(url, {
+        await global.fetch(url, {
             method: 'POST',
             headers: {
                 Authorization: token,
