@@ -1,5 +1,4 @@
-require('isomorphic-fetch');
-
+require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 
@@ -31,7 +30,7 @@ export class WechatWebInstance {
         if (process.env.NODE_ENV === 'development') {
             return mockData;
         }
-        const response = await fetch(url, init);
+        const response = await global.fetch(url, init);
 
         const { headers, status } = response;
         if (![200, 201].includes(status)) {
@@ -42,6 +41,9 @@ export class WechatWebInstance {
         if (contentType.includes('application/json')) {
             const json = await response.json();
             if (typeof json.errcode === 'number' && json.errcode !== 0) {
+                if (json.errcode === 40001) {
+                    this.refreshAccessToken();
+                }
                 throw new Error(
                     `调用微信接口返回出错，code是${json.errcode}，信息是${json.errmsg}`
                 );
