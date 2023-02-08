@@ -24,8 +24,8 @@ export class WechatPublicInstance {
     appId: string;
     appSecret: string;
 
-    accessToken?: string;
-    refreshAccessTokenHandler?: any;
+    private accessToken?: string;
+    private refreshAccessTokenHandler?: any;
 
     constructor(appId: string, appSecret: string) {
         this.appId = appId;
@@ -83,15 +83,47 @@ export class WechatPublicInstance {
     async code2Session(code: string) {
         const result = await this.access(
             `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`,
-            { session_key: 'aaa', openid: code, unionid: code }
+            { access_token: 'aaa', openid: code, unionid: code, refresh_token: 'aaa', is_snapshotuser: false, expires_in: 30, scope: 'userinfo' }
         );
-        const { session_key, openid, unionid } =
+        const { access_token, openid, unionid, scope, refresh_token, is_snapshotuser, expires_in } =
             typeof result === 'string' ? JSON.parse(result) : result; // 这里微信返回的数据有时候竟然是text/plain
 
         return {
-            sessionKey: session_key as string,
+            accessToken: access_token as string,
             openId: openid as string,
             unionId: unionid as string,
+            scope: scope as string,
+            refreshToken: refresh_token as string,
+            isSnapshotUser: !!is_snapshotuser,
+            atExpiredAt: Date.now() + expires_in * 1000,
+            rtExpiredAt: Date.now() + 30 * 86400 * 1000,
+        };
+    }
+
+    async refreshUserAccessToken(refreshToken: string) {
+        const result = await this.access(
+            `https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=${this.appId}&grant_type=refresh_token&refresh_token=${refreshToken}`,
+            { access_token: 'aaa', refresh_token: 'aaa', expires_in: 30, scope: 'userinfo' }
+        );
+        const { access_token, refresh_token, expires_in, scope } = result;
+        return {
+            accessToken: access_token as string,
+            refreshToken: refresh_token as string,
+            atExpiredAt: Date.now() + expires_in * 1000,
+            scope: scope as string,
+        };
+    }
+
+    async getUserInfo(accessToken: string, openId: string) {
+        const result = await this.access(
+            `https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openId}&lang=zh_CN`,
+            { nickname: '张三丰', sex: 1, headimgurl: 'hhttps://www.ertongzy.com/uploads/allimg/161005/2021233Y7-0.jpg' }
+        );
+        const { nickname, sex, headimgurl } = result;
+        return {
+            nickname: nickname as string,
+            gender: sex === 1 ? 'male' : sex === 2 ?'female' : undefined,
+            avatar: headimgurl as string,
         };
     }
 

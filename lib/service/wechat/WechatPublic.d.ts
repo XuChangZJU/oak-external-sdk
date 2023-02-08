@@ -15,15 +15,31 @@ declare type ServeMessageOption = TextServeMessageOption | NewsServeMessageOptio
 export declare class WechatPublicInstance {
     appId: string;
     appSecret: string;
-    accessToken?: string;
-    refreshAccessTokenHandler?: any;
+    private accessToken?;
+    private refreshAccessTokenHandler?;
     constructor(appId: string, appSecret: string);
     private getAccessToken;
     private access;
     code2Session(code: string): Promise<{
-        sessionKey: string;
+        accessToken: string;
         openId: string;
         unionId: string;
+        scope: string;
+        refreshToken: string;
+        isSnapshotUser: boolean;
+        atExpiredAt: number;
+        rtExpiredAt: number;
+    }>;
+    refreshUserAccessToken(refreshToken: string): Promise<{
+        accessToken: string;
+        refreshToken: string;
+        atExpiredAt: number;
+        scope: string;
+    }>;
+    getUserInfo(accessToken: string, openId: string): Promise<{
+        nickname: string;
+        gender: string | undefined;
+        avatar: string;
     }>;
     private refreshAccessToken;
     decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
