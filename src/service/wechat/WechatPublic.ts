@@ -119,7 +119,7 @@ export class WechatPublicInstance {
     async getUserInfo(accessToken: string, openId: string) {
         const result = await this.access(
             `https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openId}&lang=zh_CN`,
-            { nickname: '张三丰', sex: 1, headimgurl: 'https://www.ertongzy.com/uploads/allimg/161005/2021233Y7-0.jpg' }
+            { nickname: '码农哥', sex: 1, headimgurl: 'https://www.ertongzy.com/uploads/allimg/161005/2021233Y7-0.jpg' }
         );
         const { nickname, sex, headimgurl } = result;
         return {
