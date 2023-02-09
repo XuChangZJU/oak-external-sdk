@@ -156,4 +156,33 @@ export class WechatMpInstance {
         );
         return (await result.arrayBuffer()) as ArrayBuffer;
     }
+
+    async getUserPhoneNumber(code: string) {
+        const token = await this.getAccessToken();
+        const result = (await this.access(
+            `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${token}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code,
+                }),
+            }
+        )) as {
+            errcode: number;
+            errmsg: 'ok' | string;
+            phone_info: {
+                phoneNumber: string;
+                purePhoneNumber: string;
+                countryCode: number;
+                watermark: {
+                    timestamp: number;
+                    appid: string;
+                };
+            };
+        };
+        return result.phone_info;
+    }
 }

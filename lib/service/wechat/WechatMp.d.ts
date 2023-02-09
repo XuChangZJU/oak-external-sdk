@@ -26,4 +26,13 @@ export declare class WechatMpInstance {
         };
         isHyaline?: true;
     }): Promise<ArrayBuffer>;
+    getUserPhoneNumber(code: string): Promise<{
+        phoneNumber: string;
+        purePhoneNumber: string;
+        countryCode: number;
+        watermark: {
+            timestamp: number;
+            appid: string;
+        };
+    }>;
 }
