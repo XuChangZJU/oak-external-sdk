@@ -83,7 +83,7 @@ export class WechatWebInstance {
     private async refreshAccessToken() {
         const result = await this.access(
             `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`,
-            { access_token: 'mockToken', expires_in: 3600 * 1000 }
+            { access_token: 'mockToken', expires_in: 600 }
         );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;

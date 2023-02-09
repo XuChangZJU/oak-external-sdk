@@ -119,7 +119,7 @@ export class WechatPublicInstance {
     async getUserInfo(accessToken: string, openId: string) {
         const result = await this.access(
             `https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openId}&lang=zh_CN`,
-            { nickname: '张三丰', sex: 1, headimgurl: 'hhttps://www.ertongzy.com/uploads/allimg/161005/2021233Y7-0.jpg' }
+            { nickname: '张三丰', sex: 1, headimgurl: 'https://www.ertongzy.com/uploads/allimg/161005/2021233Y7-0.jpg' }
         );
         const { nickname, sex, headimgurl } = result;
         return {
@@ -132,11 +132,12 @@ export class WechatPublicInstance {
     private async refreshAccessToken() {
         const result = await this.access(
             `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`,
-            { access_token: 'mockToken', expires_in: 3600 * 1000 }
+            { access_token: 'mockToken', expires_in: 600 }
         );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         // 生成下次刷新的定时器
+        console.log((expires_in - 10) * 1000);
         this.refreshAccessTokenHandler = setTimeout(() => {
             this.refreshAccessToken();
         }, (expires_in - 10) * 1000);
