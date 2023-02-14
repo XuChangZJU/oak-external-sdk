@@ -21,16 +21,27 @@ type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption;
 
 export class WechatPublicInstance {
     appId: string;
-    appSecret: string;
+    appSecret?: string;
 
     private accessToken?: string;
     private refreshAccessTokenHandler?: any;
+    private externalRefreshFn?: (appId: string) => Promise<string>;
 
-    constructor(appId: string, appSecret: string) {
+    constructor(appId: string, appSecret?: string, accessToken?: string, externalRefreshFn?: (appId: string) => Promise<string>) {
         this.appId = appId;
         this.appSecret = appSecret;
 
-        this.refreshAccessToken();
+        this.externalRefreshFn = externalRefreshFn;
+        if(!appSecret && !externalRefreshFn) {
+            throw new Error('appSecret和externalRefreshFn必须至少支持一个');
+        }
+        
+        if (accessToken) {
+            this.accessToken = accessToken;
+        }
+        else {
+            this.refreshAccessToken();
+        }
     }
 
     private async getAccessToken() {
@@ -43,7 +54,7 @@ export class WechatPublicInstance {
         }
     }
 
-    private async access(url: string, mockData: any, init?: RequestInit) {
+    private async access(url: string, mockData: any, init?: RequestInit): Promise<any> {
         if (process.env.NODE_ENV === 'development') {
             return mockData;
         }
@@ -58,8 +69,8 @@ export class WechatPublicInstance {
         if (contentType.includes('application/json')) {
             const json = await response.json();
             if (typeof json.errcode === 'number' && json.errcode !== 0) {
-                if (json.errcode === 40001) {
-                    this.refreshAccessToken();
+                if ([40001, 42001].includes(json.errcode)) {
+                    return this.refreshAccessToken(url, init);
                 }
                 throw new Error(
                     `调用微信接口返回出错，code是${json.errcode}，信息是${json.errmsg}`
@@ -129,8 +140,8 @@ export class WechatPublicInstance {
         };
     }
 
-    private async refreshAccessToken() {
-        const result = await this.access(
+    private async refreshAccessToken(url?: string, init?: RequestInit) {
+        const result = this.externalRefreshFn ? await this.externalRefreshFn(this.appId) : await this.access(
             `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`,
             { access_token: 'mockToken', expires_in: 600 }
         );
@@ -141,6 +152,9 @@ export class WechatPublicInstance {
         this.refreshAccessTokenHandler = setTimeout(() => {
             this.refreshAccessToken();
         }, (expires_in - 10) * 1000);
+        if (url) {
+            return this.access(url, {}, init);
+        }
     }
 
     decryptData(

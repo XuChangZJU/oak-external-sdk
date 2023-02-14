@@ -1,9 +1,10 @@
 export declare class WechatWebInstance {
     appId: string;
-    appSecret: string;
+    appSecret?: string;
     accessToken?: string;
     refreshAccessTokenHandler?: any;
-    constructor(appId: string, appSecret: string);
+    private externalRefreshFn?;
+    constructor(appId: string, appSecret?: string, accessToken?: string, externalRefreshFn?: (appId: string) => Promise<string>);
     private getAccessToken;
     private access;
     code2Session(code: string): Promise<{

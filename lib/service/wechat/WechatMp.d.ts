@@ -1,9 +1,10 @@
 export declare class WechatMpInstance {
     appId: string;
-    appSecret: string;
+    appSecret?: string;
     private accessToken?;
     private refreshAccessTokenHandler?;
-    constructor(appId: string, appSecret: string);
+    private externalRefreshFn?;
+    constructor(appId: string, appSecret?: string, accessToken?: string, externalRefreshFn?: (appId: string) => Promise<string>);
     private getAccessToken;
     private access;
     code2Session(code: string): Promise<{
@@ -35,4 +36,18 @@ export declare class WechatMpInstance {
             appid: string;
         };
     }>;
+    /**
+     * 发送订阅消息
+     * @param param0
+     * @returns
+     * https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/sendMessage.html
+     */
+    sendSubscribedMessage({ templateId, page, openId, data, state, lang }: {
+        templateId: string;
+        page?: string;
+        openId: string;
+        data: object;
+        state?: 'developer' | 'trial' | 'formal';
+        lang?: 'zh_CN' | 'zh_TW' | 'en_US' | 'zh_HK';
+    }): Promise<any>;
 }

@@ -15,15 +15,17 @@ class WechatSDK {
 
     getInstance(
         appId: string,
-        appSecret: string,
-        type: 'wechatMp' | 'wechatPublic' | 'web'
+        type: 'wechatMp' | 'wechatPublic' | 'web',
+        appSecret?: string,
+        accessToken?: string,
+        externalRefreshFn?: (appId: string) => Promise<string>
     ) {
         // type 支持web网站扫码登录
         if (type === 'wechatMp') {
             if (this.mpMap[appId]) {
                 return this.mpMap[appId];
             }
-            const instance = new WechatMpInstance(appId, appSecret);
+            const instance = new WechatMpInstance(appId, appSecret, accessToken, externalRefreshFn);
             Object.assign(this.mpMap, {
                 [appId]: instance,
             });
@@ -32,7 +34,7 @@ class WechatSDK {
             if (this.publicMap[appId]) {
                 return this.publicMap[appId];
             }
-            const instance = new WechatPublicInstance(appId, appSecret);
+            const instance = new WechatPublicInstance(appId, appSecret, accessToken, externalRefreshFn);
             Object.assign(this.publicMap, {
                 [appId]: instance,
             });
@@ -41,7 +43,7 @@ class WechatSDK {
             if (this.webMap[appId]) {
                 return this.webMap[appId];
             }
-            const instance = new WechatWebInstance(appId, appSecret);
+            const instance = new WechatWebInstance(appId, appSecret, accessToken, externalRefreshFn);
             Object.assign(this.webMap, {
                 [appId]: instance,
             });

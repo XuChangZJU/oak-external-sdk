@@ -6,7 +6,7 @@ declare class WechatSDK {
     publicMap: Record<string, WechatPublicInstance>;
     webMap: Record<string, WechatWebInstance>;
     constructor();
-    getInstance(appId: string, appSecret: string, type: 'wechatMp' | 'wechatPublic' | 'web'): WechatMpInstance | WechatPublicInstance | WechatWebInstance;
+    getInstance(appId: string, type: 'wechatMp' | 'wechatPublic' | 'web', appSecret?: string, accessToken?: string, externalRefreshFn?: (appId: string) => Promise<string>): WechatMpInstance | WechatPublicInstance | WechatWebInstance;
 }
 declare const SDK: WechatSDK;
 export default SDK;

@@ -14,10 +14,11 @@ declare type NewsServeMessageOption = {
 declare type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption;
 export declare class WechatPublicInstance {
     appId: string;
-    appSecret: string;
+    appSecret?: string;
     private accessToken?;
     private refreshAccessTokenHandler?;
-    constructor(appId: string, appSecret: string);
+    private externalRefreshFn?;
+    constructor(appId: string, appSecret?: string, accessToken?: string, externalRefreshFn?: (appId: string) => Promise<string>);
     private getAccessToken;
     private access;
     code2Session(code: string): Promise<{
