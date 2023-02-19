@@ -10,18 +10,22 @@ export class WechatMpInstance {
     private refreshAccessTokenHandler?: any;
     private externalRefreshFn?: (appId: string) => Promise<string>;
 
-    constructor(appId: string, appSecret?: string, accessToken?: string, externalRefreshFn?: (appId: string) => Promise<string>) {
+    constructor(
+        appId: string,
+        appSecret?: string,
+        accessToken?: string,
+        externalRefreshFn?: (appId: string) => Promise<string>
+    ) {
         this.appId = appId;
         this.appSecret = appSecret;
         this.externalRefreshFn = externalRefreshFn;
-        if(!appSecret && !externalRefreshFn) {
+        if (!appSecret && !externalRefreshFn) {
             throw new Error('appSecret和externalRefreshFn必须至少支持一个');
         }
-        
+
         if (accessToken) {
             this.accessToken = accessToken;
-        }
-        else {
+        } else {
             this.refreshAccessToken();
         }
     }
@@ -36,7 +40,11 @@ export class WechatMpInstance {
         }
     }
 
-    private async access(url: string, init?: RequestInit, fresh?: true): Promise<any> {
+    private async access(
+        url: string,
+        init?: RequestInit,
+        fresh?: true
+    ): Promise<any> {
         const response = await global.fetch(url, init);
 
         const { headers, status } = response;
@@ -50,7 +58,9 @@ export class WechatMpInstance {
             if (typeof json.errcode === 'number' && json.errcode !== 0) {
                 if ([42001, 40001].includes(json.errcode)) {
                     if (fresh) {
-                        throw new Error('刚刷新的token不可能马上过期，请检查是否有并发刷新token的逻辑');
+                        throw new Error(
+                            '刚刷新的token不可能马上过期，请检查是否有并发刷新token的逻辑'
+                        );
                     }
                     console.log(JSON.stringify(json));
                     return this.refreshAccessToken(url, init);
@@ -90,13 +100,17 @@ export class WechatMpInstance {
     }
 
     private async refreshAccessToken(url?: string, init?: RequestInit) {
-        const result = this.externalRefreshFn ? await this.externalRefreshFn(this.appId) : await this.access(
-            `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
-        );
+        const result = this.externalRefreshFn
+            ? await this.externalRefreshFn(this.appId)
+            : await this.access(
+                  `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
+              );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         if (process.env.NODE_ENV === 'development') {
-            console.log(`小程序获得新的accessToken。appId:[${this.appId}], token: [${access_token}]`);
+            console.log(
+                `小程序获得新的accessToken。appId:[${this.appId}], token: [${access_token}]`
+            );
         }
         // 生成下次刷新的定时器
         this.refreshAccessTokenHandler = setTimeout(() => {
@@ -135,7 +149,7 @@ export class WechatMpInstance {
     async getMpUnlimitWxaCode({
         scene,
         page,
-        envVersion,
+        envVersion = 'release',
         width,
         autoColor,
         lineColor,
@@ -143,7 +157,7 @@ export class WechatMpInstance {
     }: {
         scene: string;
         page: string;
-        envVersion?: string;
+        envVersion?: 'release' | 'trial' | 'develop';
         width?: number;
         autoColor?: boolean;
         lineColor?: {
@@ -208,11 +222,18 @@ export class WechatMpInstance {
 
     /**
      * 发送订阅消息
-     * @param param0 
-     * @returns 
+     * @param param0
+     * @returns
      * https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/sendMessage.html
      */
-    async sendSubscribedMessage({templateId, page, openId, data, state, lang}: {
+    async sendSubscribedMessage({
+        templateId,
+        page,
+        openId,
+        data,
+        state,
+        lang,
+    }: {
         templateId: string;
         page?: string;
         openId: string;
@@ -224,16 +245,19 @@ export class WechatMpInstance {
         /**
          * 实测，若用户未订阅，会抛出errcode: 43101, errmsg: user refuse to accept the msg
          */
-        return this.access(`https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${token}`, {
-            body: JSON.stringify({
-                template_id: templateId,
-                page,
-                touser: openId,
-                data,
-                miniprogram_state: state || 'formal',
-                lang: lang || 'zh_CN',
-            }),
-            method: 'post',
-        });
+        return this.access(
+            `https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${token}`,
+            {
+                body: JSON.stringify({
+                    template_id: templateId,
+                    page,
+                    touser: openId,
+                    data,
+                    miniprogram_state: state || 'formal',
+                    lang: lang || 'zh_CN',
+                }),
+                method: 'post',
+            }
+        );
     }
 }
