@@ -17,7 +17,7 @@ export declare class WechatMpInstance {
     getMpUnlimitWxaCode({ scene, page, envVersion, width, autoColor, lineColor, isHyaline, }: {
         scene: string;
         page: string;
-        envVersion?: string;
+        envVersion?: 'release' | 'trial' | 'develop';
         width?: number;
         autoColor?: boolean;
         lineColor?: {
@@ -42,7 +42,7 @@ export declare class WechatMpInstance {
      * @returns
      * https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/sendMessage.html
      */
-    sendSubscribedMessage({ templateId, page, openId, data, state, lang }: {
+    sendSubscribedMessage({ templateId, page, openId, data, state, lang, }: {
         templateId: string;
         page?: string;
         openId: string;
