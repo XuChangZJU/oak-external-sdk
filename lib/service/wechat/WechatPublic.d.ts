@@ -11,7 +11,17 @@ declare type NewsServeMessageOption = {
     url: string;
     picurl?: string;
 };
-declare type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption;
+declare type MpServeMessageOption = {
+    openId: string;
+    type: 'mp';
+    data: {
+        title: string;
+        appId: string;
+        pagepath: string;
+        thumbnailId: string;
+    };
+};
+declare type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption;
 export declare class WechatPublicInstance {
     appId: string;
     appSecret?: string;

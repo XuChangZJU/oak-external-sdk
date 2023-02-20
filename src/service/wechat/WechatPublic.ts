@@ -17,7 +17,18 @@ type NewsServeMessageOption = {
     picurl?: string;
 };
 
-type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption;
+type MpServeMessageOption = {
+    openId: string;
+    type: 'mp';
+    data: {
+        title: string;
+        appId: string;
+        pagepath: string;
+        thumbnailId: string;
+    };
+};
+
+type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption;
 
 export class WechatPublicInstance {
     appId: string;
@@ -323,6 +334,21 @@ export class WechatPublicInstance {
                                     picurl: options.picurl,
                                 },
                             ],
+                        },
+                    }),
+                });
+                break;
+            }
+            case 'mp': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'miniprogrampage',
+                        miniprogrampage: {
+                            title: options.data.title,
+                            appid: options.data.appId,
+                            pagepath: options.data.pagepath,
+                            thumb_media_id: options.data.thumbnailId,
                         },
                     }),
                 });
