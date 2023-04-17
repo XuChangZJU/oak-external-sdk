@@ -1,6 +1,8 @@
 require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
+const sha1 = require('sha1');
+
 // 目前先支持text和news, 其他type文档：https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Service_Center_messages.html
 // type ServeMessageType = 'text' | 'news' | 'mpnews' | 'mpnewsarticle' | 'image' | 'voice' | 'video' | 'music' | 'msgmenu';/
 type TextServeMessageOption = {
@@ -38,19 +40,23 @@ export class WechatPublicInstance {
     private refreshAccessTokenHandler?: any;
     private externalRefreshFn?: (appId: string) => Promise<string>;
 
-    constructor(appId: string, appSecret?: string, accessToken?: string, externalRefreshFn?: (appId: string) => Promise<string>) {
+    constructor(
+        appId: string,
+        appSecret?: string,
+        accessToken?: string,
+        externalRefreshFn?: (appId: string) => Promise<string>
+    ) {
         this.appId = appId;
         this.appSecret = appSecret;
 
         this.externalRefreshFn = externalRefreshFn;
-        if(!appSecret && !externalRefreshFn) {
+        if (!appSecret && !externalRefreshFn) {
             throw new Error('appSecret和externalRefreshFn必须至少支持一个');
         }
-        
+
         if (accessToken) {
             this.accessToken = accessToken;
-        }
-        else {
+        } else {
             this.refreshAccessToken();
         }
     }
@@ -65,7 +71,11 @@ export class WechatPublicInstance {
         }
     }
 
-    private async access(url: string, mockData: any, init?: RequestInit): Promise<any> {
+    private async access(
+        url: string,
+        mockData: any,
+        init?: RequestInit
+    ): Promise<any> {
         if (process.env.NODE_ENV === 'development') {
             return mockData;
         }
@@ -107,10 +117,25 @@ export class WechatPublicInstance {
     async code2Session(code: string) {
         const result = await this.access(
             `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`,
-            { access_token: 'aaa', openid: code, unionid: code, refresh_token: 'aaa', is_snapshotuser: false, expires_in: 30, scope: 'userinfo' }
+            {
+                access_token: 'aaa',
+                openid: code,
+                unionid: code,
+                refresh_token: 'aaa',
+                is_snapshotuser: false,
+                expires_in: 30,
+                scope: 'userinfo',
+            }
         );
-        const { access_token, openid, unionid, scope, refresh_token, is_snapshotuser, expires_in } =
-            typeof result === 'string' ? JSON.parse(result) : result; // 这里微信返回的数据有时候竟然是text/plain
+        const {
+            access_token,
+            openid,
+            unionid,
+            scope,
+            refresh_token,
+            is_snapshotuser,
+            expires_in,
+        } = typeof result === 'string' ? JSON.parse(result) : result; // 这里微信返回的数据有时候竟然是text/plain
 
         return {
             accessToken: access_token as string,
@@ -127,7 +152,12 @@ export class WechatPublicInstance {
     async refreshUserAccessToken(refreshToken: string) {
         const result = await this.access(
             `https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=${this.appId}&grant_type=refresh_token&refresh_token=${refreshToken}`,
-            { access_token: 'aaa', refresh_token: 'aaa', expires_in: 30, scope: 'userinfo' }
+            {
+                access_token: 'aaa',
+                refresh_token: 'aaa',
+                expires_in: 30,
+                scope: 'userinfo',
+            }
         );
         const { access_token, refresh_token, expires_in, scope } = result;
         return {
@@ -141,21 +171,28 @@ export class WechatPublicInstance {
     async getUserInfo(accessToken: string, openId: string) {
         const result = await this.access(
             `https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openId}&lang=zh_CN`,
-            { nickname: '码农哥', sex: 1, headimgurl: 'https://www.ertongzy.com/uploads/allimg/161005/2021233Y7-0.jpg' }
+            {
+                nickname: '码农哥',
+                sex: 1,
+                headimgurl:
+                    'https://www.ertongzy.com/uploads/allimg/161005/2021233Y7-0.jpg',
+            }
         );
         const { nickname, sex, headimgurl } = result;
         return {
             nickname: nickname as string,
-            gender: sex === 1 ? 'male' : sex === 2 ?'female' : undefined,
+            gender: sex === 1 ? 'male' : sex === 2 ? 'female' : undefined,
             avatar: headimgurl as string,
         };
     }
 
     private async refreshAccessToken(url?: string, init?: RequestInit) {
-        const result = this.externalRefreshFn ? await this.externalRefreshFn(this.appId) : await this.access(
-            `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`,
-            { access_token: 'mockToken', expires_in: 600 }
-        );
+        const result = this.externalRefreshFn
+            ? await this.externalRefreshFn(this.appId)
+            : await this.access(
+                  `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`,
+                  { access_token: 'mockToken', expires_in: 600 }
+              );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         // 生成下次刷新的定时器
@@ -427,5 +464,75 @@ export class WechatPublicInstance {
             return result;
         }
         throw new Error(JSON.stringify(result));
+    }
+
+    async getTicket() {
+        const myInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = (await this.access(
+            `https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${token}&type=jsapi`,
+            {
+                ticket: `ticket${Date.now()}`,
+                expires_in: 30,
+            },
+            myInit
+        )) as {
+            ticket: string;
+            expires_in: number;
+        };
+
+        const { ticket } = result;
+
+        return ticket;
+    }
+
+    private randomString() {
+        let len = 16;
+        let $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
+
+        /** **默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+        let maxPos = $chars.length;
+        let pwd = '';
+        for (let i = 0; i < len; i++) {
+            pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+        }
+        return pwd;
+    }
+
+    async signatureJsSDK(options: { url: string }) {
+        const url = options.url;
+
+        const noncestr = this.randomString();
+        const timestamp = parseInt((Date.now() / 1000).toString(), 10);
+
+        const jsapi_ticket = await this.getTicket();
+        const contentArray = {
+            noncestr,
+            jsapi_ticket,
+            timestamp,
+            url,
+        };
+        let zhimaString = '';
+        Object.keys(contentArray)
+            .sort()
+            .forEach((ele, idx) => {
+                if (idx > 0) {
+                    zhimaString += '&';
+                }
+                zhimaString += ele;
+                zhimaString += '=';
+                zhimaString += contentArray[ele as keyof typeof contentArray];
+            });
+        return {
+            signature: sha1(zhimaString),
+            noncestr,
+            timestamp,
+            appId: this.appId,
+        };
     }
 }

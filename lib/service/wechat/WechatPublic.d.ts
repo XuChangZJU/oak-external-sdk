@@ -81,5 +81,15 @@ export declare class WechatPublicInstance {
         count: number;
         noContent?: 0 | 1;
     }): Promise<any>;
+    getTicket(): Promise<string>;
+    private randomString;
+    signatureJsSDK(options: {
+        url: string;
+    }): Promise<{
+        signature: any;
+        noncestr: string;
+        timestamp: number;
+        appId: string;
+    }>;
 }
 export {};
