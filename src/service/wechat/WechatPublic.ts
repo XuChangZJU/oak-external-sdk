@@ -1,7 +1,6 @@
 require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
-const sha1 = require('sha1');
 
 // 目前先支持text和news, 其他type文档：https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Service_Center_messages.html
 // type ServeMessageType = 'text' | 'news' | 'mpnews' | 'mpnewsarticle' | 'image' | 'voice' | 'video' | 'music' | 'msgmenu';/
@@ -529,7 +528,10 @@ export class WechatPublicInstance {
                 zhimaString += contentArray[ele as keyof typeof contentArray];
             });
         return {
-            signature: sha1(zhimaString),
+            signature: crypto
+                .createHash('sha1')
+                .update(zhimaString)
+                .digest('hex'),
             noncestr,
             timestamp,
             appId: this.appId,
