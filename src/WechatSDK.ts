@@ -52,6 +52,18 @@ class WechatSDK {
             throw new Error(`${type} not implemented`);
         }
     }
+
+    /**
+     * 解析微信公众号文章内容
+     * @param url 
+     */
+    async analyzePublicArticle(url: string): Promise<{
+        title: string;
+        publishDate: Date;
+        imageList: string[];
+    }> {
+        throw new Error('method not implemented');
+    }
 }
 
 const SDK = new WechatSDK();
