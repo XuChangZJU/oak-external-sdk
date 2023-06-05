@@ -86,7 +86,7 @@ export declare class WechatPublicInstance {
     signatureJsSDK(options: {
         url: string;
     }): Promise<{
-        signature: any;
+        signature: string;
         noncestr: string;
         timestamp: number;
         appId: string;
