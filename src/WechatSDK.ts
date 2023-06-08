@@ -1,6 +1,7 @@
 import { WechatMpInstance } from './service/wechat/WechatMp';
 import { WechatPublicInstance } from './service/wechat/WechatPublic';
 import { WechatWebInstance } from './service/wechat/WechatWeb';
+import {load} from 'cheerio';
 
 class WechatSDK {
     mpMap: Record<string, WechatMpInstance>;
@@ -55,14 +56,47 @@ class WechatSDK {
 
     /**
      * 解析微信公众号文章内容
-     * @param url 
+     * @param url 微信公众号链接
+     * @returns html
      */
     async analyzePublicArticle(url: string): Promise<{
         title: string;
-        publishDate: Date;
+        publishDate: number | undefined;
         imageList: string[];
     }> {
-        throw new Error('method not implemented');
+        const response = await fetch(url);
+        const html = await response.text();
+        const $ = load(html);
+        const title = $('#activity-name') ? $('#activity-name').text()?.trim().replace(/\n/g, '') : '';
+        const ems = $('em');
+        const imgsElement = $('img');
+        const imageList: string[] = [];
+        for (let i = 0; i < imgsElement.length; i++) {
+            // 把 img 元素中的 src 内容提取出来，加入到数组中
+            const src = imgsElement[i].attribs['data-src'];
+            if (src && (src.includes('http') || src.includes('https'))) {
+                imageList.push(src);
+            }
+        }
+        let publishDate;
+        // $('em').toArray().forEach((element, index) => {
+        //     if (index === 0) {
+        //         publishDate = $(element).text();
+        //     }
+        // });
+        const lines = html.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes('var ct =')) {
+                const timeStr = lines[i].split('"')[1] + '000'
+                publishDate = Number(timeStr);
+                break;
+            }
+        }
+        return {
+            title,
+            publishDate,
+            imageList,
+        }        
     }
 }
 
