@@ -5,13 +5,18 @@
     "author": {
         "name": "XuChang"
     },
-    "main": "lib/index.js",
+    "main": "lib/index",
+    "module": "es/index",
+    "types": "es/index.d.ts",
+    "typings": "es/index.d.ts",
     "files": [
-        "lib/**/*"
+        "lib/**/*",
+        "es/**/*"
     ],
     "scripts": {
         "test": "ts-node test/test.ts",
-        "build": "tsc"
+        "build": "tsc -p tsconfig.json",
+        "build-es": "tsc -p tsconfig.es.json"
     },
     "license": "ISC",
     "devDependencies": {
