@@ -23,7 +23,6 @@ export class QiniuCloudInstance {
      */
     getUploadInfo(
         uploadHost: string,
-        domain: string,
         bucket: string,
         key?: string
     ) {
@@ -35,7 +34,6 @@ export class QiniuCloudInstance {
                 uploadToken,
                 uploadHost,
                 bucket,
-                domain,
             };
         } catch (err) {
             throw err;

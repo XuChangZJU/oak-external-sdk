@@ -18,7 +18,7 @@ export class QiniuCloudInstance {
      * @param key
      * @returns
      */
-    getUploadInfo(uploadHost, domain, bucket, key) {
+    getUploadInfo(uploadHost, bucket, key) {
         try {
             const scope = key ? `${bucket}:${key}` : bucket;
             const uploadToken = this.getToken(scope);
@@ -27,7 +27,6 @@ export class QiniuCloudInstance {
                 uploadToken,
                 uploadHost,
                 bucket,
-                domain,
             };
         }
         catch (err) {

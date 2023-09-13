@@ -11,12 +11,11 @@ export declare class QiniuCloudInstance {
      * @param key
      * @returns
      */
-    getUploadInfo(uploadHost: string, domain: string, bucket: string, key?: string): {
+    getUploadInfo(uploadHost: string, bucket: string, key?: string): {
         key: string | undefined;
         uploadToken: string;
         uploadHost: string;
         bucket: string;
-        domain: string;
     };
     /**
      * 计算直播需要的token
