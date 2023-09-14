@@ -13,7 +13,6 @@ export class QiniuCloudInstance {
      * 计算客户端上传七牛需要的凭证
      * https://developer.qiniu.com/kodo/1312/upload
      * @param uploadHost
-     * @param domain
      * @param bucket
      * @param key
      * @returns
