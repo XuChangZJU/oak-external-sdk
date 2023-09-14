@@ -6,7 +6,7 @@
  *
  * 微信推送的数据格式是xml，需要自主转化成json对象
  */
-export declare type WechatPublicEventData = {
+export type WechatPublicEventData = {
     ToUserName: string;
     FromUserName: string;
     CreateTime: string;

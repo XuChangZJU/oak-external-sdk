@@ -1,4 +1,4 @@
-declare type SendSmsRequest = {
+type SendSmsRequest = {
     PhoneNumbers: string[];
     TemplateCode: string;
     SignName: string;
@@ -6,7 +6,7 @@ declare type SendSmsRequest = {
     SmsUpExtendCode?: string;
     OutId?: string;
 };
-declare type SendSmsResponse = {
+type SendSmsResponse = {
     Code: 'OK' | string;
     Message: string;
     BizId: string;

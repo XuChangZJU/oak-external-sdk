@@ -1,5 +1,5 @@
 import Core from '@alicloud/pop-core/lib/rpc';
-declare type SendSmsRequest = {
+type SendSmsRequest = {
     PhoneNumbers: string[];
     TemplateCode: string;
     SignName: string;
