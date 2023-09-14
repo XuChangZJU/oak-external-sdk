@@ -6,17 +6,15 @@ export declare class QiniuCloudInstance {
      * 计算客户端上传七牛需要的凭证
      * https://developer.qiniu.com/kodo/1312/upload
      * @param uploadHost
-     * @param domain
      * @param bucket
      * @param key
      * @returns
      */
-    getUploadInfo(uploadHost: string, domain: string, bucket: string, key?: string): {
+    getUploadInfo(uploadHost: string, bucket: string, key?: string): {
         key: string | undefined;
         uploadToken: string;
         uploadHost: string;
         bucket: string;
-        domain: string;
     };
     /**
      * 计算直播需要的token

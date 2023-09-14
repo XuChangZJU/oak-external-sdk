@@ -13,12 +13,11 @@ export class QiniuCloudInstance {
      * 计算客户端上传七牛需要的凭证
      * https://developer.qiniu.com/kodo/1312/upload
      * @param uploadHost
-     * @param domain
      * @param bucket
      * @param key
      * @returns
      */
-    getUploadInfo(uploadHost, domain, bucket, key) {
+    getUploadInfo(uploadHost, bucket, key) {
         try {
             const scope = key ? `${bucket}:${key}` : bucket;
             const uploadToken = this.getToken(scope);
@@ -27,7 +26,6 @@ export class QiniuCloudInstance {
                 uploadToken,
                 uploadHost,
                 bucket,
-                domain,
             };
         }
         catch (err) {

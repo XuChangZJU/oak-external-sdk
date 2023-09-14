@@ -1,7 +1,7 @@
 import { WechatMpInstance } from './service/wechat/WechatMp';
 import { WechatPublicInstance } from './service/wechat/WechatPublic';
 import { WechatWebInstance } from './service/wechat/WechatWeb';
-import { load } from 'cheerio';
+import { load } from './utils/cheerio';
 class WechatSDK {
     mpMap;
     publicMap;
