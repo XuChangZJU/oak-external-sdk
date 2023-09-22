@@ -52,6 +52,12 @@ export declare class WechatPublicInstance {
         gender: string | undefined;
         avatar: string;
     }>;
+    getTags(): Promise<any>;
+    getCurrentMenu(): Promise<any>;
+    getMenu(): Promise<any>;
+    createMenu(menuConfig: any): Promise<any>;
+    createConditionalMenu(menuConfig: any): Promise<any>;
+    deleteConditionalMenu(menuid: number): Promise<any>;
     private refreshAccessToken;
     decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
     getQrCode(options: {
@@ -80,6 +86,23 @@ export declare class WechatPublicInstance {
         offset?: number;
         count: number;
         noContent?: 0 | 1;
+    }): Promise<any>;
+    getArticle(options: {
+        article_id: string;
+    }): Promise<any>;
+    createMaterial(options: {
+        type: 'image' | 'voice' | 'video' | 'thumb';
+        media: FormData;
+        description?: FormData;
+    }): Promise<any>;
+    batchGetMaterialList(options: {
+        type: 'image' | 'video' | 'voice' | 'news';
+        offset?: number;
+        count: number;
+    }): Promise<any>;
+    getMaterial(options: {
+        type: 'image' | 'video' | 'voice' | 'news';
+        media_id: string;
     }): Promise<any>;
     getTicket(): Promise<string>;
     private randomString;
