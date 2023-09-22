@@ -288,7 +288,7 @@ export class WechatPublicInstance {
         const token = await this.getAccessToken();
         const result = await this.access(
             `https://api.weixin.qq.com/cgi-bin/menu/delconditional?access_token=${token}`,
-           undefined,
+            undefined,
             myInit
         );
         const { errcode } = result;
@@ -315,7 +315,7 @@ export class WechatPublicInstance {
             this.refreshAccessToken();
         }, (expires_in - 10) * 1000);
         if (url) {
-            const url2= new URL.URL(url);
+            const url2 = new URL.URL(url);
             url2.searchParams.set('access_token', access_token)
 
             return this.access(url2.toString(), {}, init);
@@ -583,6 +583,7 @@ export class WechatPublicInstance {
         throw new Error(JSON.stringify(result));
     }
 
+    // 创建永久素材
     async createMaterial(options: {
         type: 'image' | 'voice' | 'video' | 'thumb',
         media: FormData,
@@ -624,6 +625,68 @@ export class WechatPublicInstance {
         throw new Error(JSON.stringify(result));
     }
 
+    //创建图文消息内的图片获取URL
+    async createImgInNewsMaterial(options: {
+        media: FormData,
+    }) {
+        const { media } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        Object.assign(myInit, {
+            body: JSON.stringify({
+                media,
+            }),
+        });
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${token}`,
+            undefined,
+            myInit,
+        );
+        const { errcode } = result;
+        if (!errcode) {
+            return result;
+        }
+        throw new Error(JSON.stringify(result));
+    }
+
+
+    //创建临时素材
+    async createTemporaryMaterial(options: {
+        type: 'image' | 'voice' | 'video' | 'thumb',
+        media: FormData,
+    }) {
+        const { type, media } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        Object.assign(myInit, {
+            body: JSON.stringify({
+                type,
+                media,
+            }),
+        });
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}`,
+            undefined,
+            myInit,
+        );
+        const { errcode } = result;
+        if (!errcode) {
+            return result;
+        }
+        throw new Error(JSON.stringify(result));
+    }
+
+    // 获取素材列表
     async batchGetMaterialList(options: {
         type: 'image' | 'video' | 'voice' | 'news',
         offset?: number;
@@ -654,6 +717,7 @@ export class WechatPublicInstance {
         throw new Error(JSON.stringify(result));
     }
 
+    // 获取永久素材
     async getMaterial(options: {
         type: 'image' | 'video' | 'voice' | 'news',
         media_id: string,
@@ -673,6 +737,33 @@ export class WechatPublicInstance {
         const token = await this.getAccessToken();
         const result = await this.access(
             `https://api.weixin.qq.com/cgi-bin/material/get_material?access_token=${token}`,
+            undefined,
+            myInit
+        );
+        if ('errcode' in result) {
+            throw new Error(JSON.stringify(result));
+        } else {
+            return result;
+        }
+    }
+
+    // 获取临时素材
+    async getTemporaryMaterial(options: {
+        media_id: string,
+    }) {
+        const { media_id } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                media_id
+            }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}`,
             undefined,
             myInit
         );

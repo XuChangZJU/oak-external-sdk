@@ -95,6 +95,13 @@ export declare class WechatPublicInstance {
         media: FormData;
         description?: FormData;
     }): Promise<any>;
+    createImgInNewsMaterial(options: {
+        media: FormData;
+    }): Promise<any>;
+    createTemporaryMaterial(options: {
+        type: 'image' | 'voice' | 'video' | 'thumb';
+        media: FormData;
+    }): Promise<any>;
     batchGetMaterialList(options: {
         type: 'image' | 'video' | 'voice' | 'news';
         offset?: number;
@@ -102,6 +109,9 @@ export declare class WechatPublicInstance {
     }): Promise<any>;
     getMaterial(options: {
         type: 'image' | 'video' | 'voice' | 'news';
+        media_id: string;
+    }): Promise<any>;
+    getTemporaryMaterial(options: {
         media_id: string;
     }): Promise<any>;
     getTicket(): Promise<string>;

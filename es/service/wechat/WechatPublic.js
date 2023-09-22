@@ -406,6 +406,7 @@ export class WechatPublicInstance {
         }
         throw new Error(JSON.stringify(result));
     }
+    // 创建永久素材
     async createMaterial(options) {
         const { type, media, description } = options;
         const myInit = {
@@ -440,6 +441,52 @@ export class WechatPublicInstance {
         }
         throw new Error(JSON.stringify(result));
     }
+    //创建图文消息内的图片获取URL
+    async createImgInNewsMaterial(options) {
+        const { media } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        Object.assign(myInit, {
+            body: JSON.stringify({
+                media,
+            }),
+        });
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${token}`, undefined, myInit);
+        const { errcode } = result;
+        if (!errcode) {
+            return result;
+        }
+        throw new Error(JSON.stringify(result));
+    }
+    //创建临时素材
+    async createTemporaryMaterial(options) {
+        const { type, media } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        Object.assign(myInit, {
+            body: JSON.stringify({
+                type,
+                media,
+            }),
+        });
+        const token = await this.getAccessToken();
+        const result = await this.access(`https https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}`, undefined, myInit);
+        const { errcode } = result;
+        if (!errcode) {
+            return result;
+        }
+        throw new Error(JSON.stringify(result));
+    }
+    // 获取素材列表
     async batchGetMaterialList(options) {
         const { offset, count, type } = options;
         const myInit = {
@@ -461,6 +508,7 @@ export class WechatPublicInstance {
         }
         throw new Error(JSON.stringify(result));
     }
+    // 获取永久素材
     async getMaterial(options) {
         const { type, media_id } = options;
         const myInit = {
@@ -475,6 +523,27 @@ export class WechatPublicInstance {
         let imgFile;
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/get_material?access_token=${token}`, undefined, myInit);
+        if ('errcode' in result) {
+            throw new Error(JSON.stringify(result));
+        }
+        else {
+            return result;
+        }
+    }
+    // 获取临时素材
+    async getTemporaryMaterial(options) {
+        const { media_id } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                media_id
+            }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}`, undefined, myInit);
         if ('errcode' in result) {
             throw new Error(JSON.stringify(result));
         }
