@@ -185,6 +185,27 @@ export class WechatPublicInstance {
         };
     }
 
+    async createTag(tag: {name: string}) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({tag}),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/tags/create?access_token=${token}`,
+            undefined,
+            myInit
+        );
+        const { errcode } = result;
+        if (errcode === 0) {
+            return Object.assign({ success: true }, result);
+        }
+        return Object.assign({ success: false }, result);
+    }
+
     async getTags() {
         const myInit = {
             method: 'GET',
@@ -199,6 +220,10 @@ export class WechatPublicInstance {
             myInit
         )
         return result;
+    }
+
+    async editTag(tag: {}) {
+
     }
 
     async getCurrentMenu() {
@@ -586,8 +611,8 @@ export class WechatPublicInstance {
     // 创建永久素材
     async createMaterial(options: {
         type: 'image' | 'voice' | 'video' | 'thumb',
-        media: FormData,
-        description?: FormData
+        media: File,
+        description?: {title: string, introduction: string}
     }) {
         const { type, media, description } = options;
         const myInit = {
@@ -596,19 +621,23 @@ export class WechatPublicInstance {
                 'Content-Type': 'application/json',
             },
         };
+        const formData = new FormData();
+        formData.append('media', media);
         if (type === 'video') {
+            const formData2 = new FormData();
+            formData2.append('description', JSON.stringify(description))
             Object.assign(myInit, {
                 body: JSON.stringify({
                     type,
-                    media,
-                    description,
+                    media: formData,
+                    description: formData2,
                 }),
             });
         } else {
             Object.assign(myInit, {
                 body: JSON.stringify({
                     type,
-                    media,
+                    media: formData,
                 }),
             });
         };
@@ -627,9 +656,11 @@ export class WechatPublicInstance {
 
     //创建图文消息内的图片获取URL
     async createImgInNewsMaterial(options: {
-        media: FormData,
+        media: File,
     }) {
         const { media } = options;
+        const formData = new FormData();
+        formData.append('media', media);
         const myInit = {
             method: 'POST',
             headers: {
@@ -638,7 +669,7 @@ export class WechatPublicInstance {
         };
         Object.assign(myInit, {
             body: JSON.stringify({
-                media,
+                media: formData,
             }),
         });
         const token = await this.getAccessToken();
@@ -658,7 +689,7 @@ export class WechatPublicInstance {
     //创建临时素材
     async createTemporaryMaterial(options: {
         type: 'image' | 'voice' | 'video' | 'thumb',
-        media: FormData,
+        media: File,
     }) {
         const { type, media } = options;
         const myInit = {
@@ -667,10 +698,12 @@ export class WechatPublicInstance {
                 'Content-Type': 'application/json',
             },
         };
+        const formData = new FormData();
+        formData.append('media', media);
         Object.assign(myInit, {
             body: JSON.stringify({
                 type,
-                media,
+                media: formData,
             }),
         });
         const token = await this.getAccessToken();

@@ -52,7 +52,11 @@ export declare class WechatPublicInstance {
         gender: string | undefined;
         avatar: string;
     }>;
+    createTag(tag: {
+        name: string;
+    }): Promise<any>;
     getTags(): Promise<any>;
+    editTag(tag: {}): Promise<void>;
     getCurrentMenu(): Promise<any>;
     getMenu(): Promise<any>;
     createMenu(menuConfig: any): Promise<any>;
@@ -92,15 +96,18 @@ export declare class WechatPublicInstance {
     }): Promise<any>;
     createMaterial(options: {
         type: 'image' | 'voice' | 'video' | 'thumb';
-        media: FormData;
-        description?: FormData;
+        media: File;
+        description?: {
+            title: string;
+            introduction: string;
+        };
     }): Promise<any>;
     createImgInNewsMaterial(options: {
-        media: FormData;
+        media: File;
     }): Promise<any>;
     createTemporaryMaterial(options: {
         type: 'image' | 'voice' | 'video' | 'thumb';
-        media: FormData;
+        media: File;
     }): Promise<any>;
     batchGetMaterialList(options: {
         type: 'image' | 'video' | 'voice' | 'news';
