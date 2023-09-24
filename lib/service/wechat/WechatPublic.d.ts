@@ -22,6 +22,7 @@ type MpServeMessageOption = {
     };
 };
 type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption;
+type MediaType = 'image' | 'voice' | 'video' | 'thumb';
 export declare class WechatPublicInstance {
     appId: string;
     appSecret?: string;
@@ -61,9 +62,8 @@ export declare class WechatPublicInstance {
     getMenu(): Promise<any>;
     createMenu(menuConfig: any): Promise<any>;
     createConditionalMenu(menuConfig: any): Promise<any>;
-    deleteConditionalMenu(menuid: number): Promise<any>;
+    deleteConditionalMenu(menuId: number): Promise<any>;
     private refreshAccessToken;
-    decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
     getQrCode(options: {
         sceneId?: number;
         sceneStr?: string;
@@ -95,19 +95,25 @@ export declare class WechatPublicInstance {
         article_id: string;
     }): Promise<any>;
     createMaterial(options: {
-        type: 'image' | 'voice' | 'video' | 'thumb';
-        media: File;
+        type: MediaType;
+        media: any;
+        filename: string;
+        filetype: string;
         description?: {
             title: string;
             introduction: string;
         };
     }): Promise<any>;
     createImgInNewsMaterial(options: {
-        media: File;
+        media: any;
+        filename: string;
+        filetype: string;
     }): Promise<any>;
     createTemporaryMaterial(options: {
-        type: 'image' | 'voice' | 'video' | 'thumb';
-        media: File;
+        type: MediaType;
+        media: any;
+        filename: string;
+        filetype: string;
     }): Promise<any>;
     batchGetMaterialList(options: {
         type: 'image' | 'video' | 'voice' | 'news';
@@ -115,13 +121,14 @@ export declare class WechatPublicInstance {
         count: number;
     }): Promise<any>;
     getMaterial(options: {
-        type: 'image' | 'video' | 'voice' | 'news';
-        media_id: string;
+        mediaId: string;
     }): Promise<any>;
     getTemporaryMaterial(options: {
-        media_id: string;
+        mediaId: string;
     }): Promise<any>;
     getTicket(): Promise<string>;
+    isJson(data: string): boolean;
+    decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
     private randomString;
     signatureJsSDK(options: {
         url: string;

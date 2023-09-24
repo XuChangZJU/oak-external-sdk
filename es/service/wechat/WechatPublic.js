@@ -2,6 +2,7 @@ require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
+import FormData from 'form-data';
 export class WechatPublicInstance {
     appId;
     appSecret;
@@ -54,6 +55,18 @@ export class WechatPublicInstance {
             contentType.includes('xml') ||
             contentType.includes('html')) {
             const data = await response.text();
+            // 某些接口返回contentType为text/plain, 里面text是json结构
+            const isJson = this.isJson(data);
+            if (isJson) {
+                const json = JSON.parse(data);
+                if (typeof json.errcode === 'number' && json.errcode !== 0) {
+                    if ([40001, 42001].includes(json.errcode)) {
+                        return this.refreshAccessToken(url, init);
+                    }
+                    throw new Error(`调用微信接口返回出错，code是${json.errcode}，信息是${json.errmsg}`);
+                }
+                return json;
+            }
             return data;
         }
         if (contentType.includes('application/octet-stream')) {
@@ -62,7 +75,17 @@ export class WechatPublicInstance {
         return response;
     }
     async code2Session(code) {
-        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`);
+        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`
+        // {
+        //     access_token: 'aaa',
+        //     openid: code,
+        //     unionid: code,
+        //     refresh_token: 'aaa',
+        //     is_snapshotuser: false,
+        //     expires_in: 30,
+        //     scope: 'userinfo',
+        // }
+        );
         const { access_token, openid, unionid, scope, refresh_token, is_snapshotuser, expires_in, } = typeof result === 'string' ? JSON.parse(result) : result; // 这里微信返回的数据有时候竟然是text/plain
         return {
             accessToken: access_token,
@@ -76,7 +99,14 @@ export class WechatPublicInstance {
         };
     }
     async refreshUserAccessToken(refreshToken) {
-        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=${this.appId}&grant_type=refresh_token&refresh_token=${refreshToken}`);
+        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=${this.appId}&grant_type=refresh_token&refresh_token=${refreshToken}`
+        // {
+        //     access_token: 'aaa',
+        //     refresh_token: 'aaa',
+        //     expires_in: 30,
+        //     scope: 'userinfo',
+        // }
+        );
         const { access_token, refresh_token, expires_in, scope } = result;
         return {
             accessToken: access_token,
@@ -86,7 +116,14 @@ export class WechatPublicInstance {
         };
     }
     async getUserInfo(accessToken, openId) {
-        const result = await this.access(`https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openId}&lang=zh_CN`);
+        const result = await this.access(`https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openId}&lang=zh_CN`
+        // {
+        //     nickname: '码农哥',
+        //     sex: 1,
+        //     headimgurl:
+        //         'https://www.ertongzy.com/uploads/allimg/161005/2021233Y7-0.jpg',
+        // }
+        );
         const { nickname, sex, headimgurl } = result;
         return {
             nickname: nickname,
@@ -121,8 +158,7 @@ export class WechatPublicInstance {
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/get?access_token=${token}`, undefined, myInit);
         return result;
     }
-    async editTag(tag) {
-    }
+    async editTag(tag) { }
     async getCurrentMenu() {
         const myInit = {
             method: 'GET',
@@ -177,14 +213,14 @@ export class WechatPublicInstance {
         }
         return Object.assign({ success: false }, result);
     }
-    async deleteConditionalMenu(menuid) {
+    async deleteConditionalMenu(menuId) {
         const myInit = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                menuid
+                menuid: menuId,
             }),
         };
         const token = await this.getAccessToken();
@@ -198,7 +234,9 @@ export class WechatPublicInstance {
     async refreshAccessToken(url, init) {
         const result = this.externalRefreshFn
             ? await this.externalRefreshFn(this.appId)
-            : await this.access(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`);
+            : await this.access(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
+            //{ access_token: 'mockToken', expires_in: 600 }
+            );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         // 生成下次刷新的定时器
@@ -211,21 +249,6 @@ export class WechatPublicInstance {
             url2.searchParams.set('access_token', access_token);
             return this.access(url2.toString(), {}, init);
         }
-    }
-    decryptData(sessionKey, encryptedData, iv, signature) {
-        const skBuf = Buffer.from(sessionKey, 'base64');
-        // const edBuf = Buffer.from(encryptedData, 'base64');
-        const ivBuf = Buffer.from(iv, 'base64');
-        const decipher = crypto.createDecipheriv('aes-128-cbc', skBuf, ivBuf);
-        // 设置自动 padding 为 true，删除填充补位
-        decipher.setAutoPadding(true);
-        let decoded = decipher.update(encryptedData, 'base64', 'utf8');
-        decoded += decipher.final('utf8');
-        const data = JSON.parse(decoded);
-        if (data.watermark.appid !== this.appId) {
-            throw new Error('Illegal Buffer');
-        }
-        return data;
     }
     async getQrCode(options) {
         const { sceneId, sceneStr, expireSeconds, isPermanent } = options;
@@ -269,8 +292,7 @@ export class WechatPublicInstance {
             };
         }
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${token}`, 
-        // {
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${token}`, undefined, // {
         //     ticket: `ticket${Date.now()}`,
         //     url: `http://mock/q/${sceneId ? sceneId : sceneStr}`,
         //     expireSeconds: expireSeconds,
@@ -299,8 +321,7 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, 
-        // {
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, undefined, // {
         //     errcode: 0,
         //     errmsg: 'ok',
         //     msgid: Date.now(),
@@ -372,8 +393,7 @@ export class WechatPublicInstance {
             }
         }
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${token}`, 
-        // {
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${token}`, undefined, // {
         //     errcode: 0,
         //     errmsg: 'ok',
         // },
@@ -426,37 +446,39 @@ export class WechatPublicInstance {
     }
     // 创建永久素材
     async createMaterial(options) {
-        const { type, media, description } = options;
+        const { type, media, description, filetype, filename } = options;
+        const formData = new FormData();
+        formData.append('media', media, {
+            contentType: filetype,
+            filename: filename, // 微信识别需要
+        });
+        if (type === 'video') {
+            formData.append('description', JSON.stringify(description));
+        }
+        const getLength = () => {
+            return new Promise((resolve, reject) => {
+                formData.getLength((err, length) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(length);
+                    }
+                });
+            });
+        };
+        const contentLength = await getLength();
+        const headers = formData.getHeaders();
+        headers['Content-Length'] = contentLength;
         const myInit = {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
         };
-        const formData = new FormData();
-        formData.append('media', media);
-        if (type === 'video') {
-            const formData2 = new FormData();
-            formData2.append('description', JSON.stringify(description));
-            Object.assign(myInit, {
-                body: JSON.stringify({
-                    type,
-                    media: formData,
-                    description: formData2,
-                }),
-            });
-        }
-        else {
-            Object.assign(myInit, {
-                body: JSON.stringify({
-                    type,
-                    media: formData,
-                }),
-            });
-        }
-        ;
+        Object.assign(myInit, {
+            body: formData,
+        });
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=${type}`, undefined, myInit);
         const { errcode } = result;
         if (!errcode) {
             return result;
@@ -465,52 +487,71 @@ export class WechatPublicInstance {
     }
     //创建图文消息内的图片获取URL
     async createImgInNewsMaterial(options) {
-        const { media } = options;
+        const { media, filetype, filename } = options;
         const formData = new FormData();
-        formData.append('media', media);
+        formData.append('media', media, {
+            contentType: filetype,
+            filename: filename, // 微信识别需要
+        });
+        const getLength = () => {
+            return new Promise((resolve, reject) => {
+                formData.getLength((err, length) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(length);
+                    }
+                });
+            });
+        };
+        const contentLength = await getLength();
+        const headers = formData.getHeaders();
+        headers['Content-Length'] = contentLength;
         const myInit = {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
         };
         Object.assign(myInit, {
-            body: JSON.stringify({
-                media: formData,
-            }),
+            body: formData,
         });
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
     //创建临时素材
     async createTemporaryMaterial(options) {
-        const { type, media } = options;
+        const { type, media, filetype, filename } = options;
+        const formData = new FormData();
+        formData.append('media', media, {
+            contentType: filetype,
+            filename: filename, // 微信识别需要
+        });
+        const getLength = () => {
+            return new Promise((resolve, reject) => {
+                formData.getLength((err, length) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(length);
+                    }
+                });
+            });
+        };
+        const contentLength = await getLength();
+        const headers = formData.getHeaders();
+        headers['Content-Length'] = contentLength;
         const myInit = {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
         };
-        const formData = new FormData();
-        formData.append('media', media);
         Object.assign(myInit, {
-            body: JSON.stringify({
-                type,
-                media: formData,
-            }),
+            body: formData,
         });
         const token = await this.getAccessToken();
-        const result = await this.access(`https https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`, undefined, myInit);
+        return result;
     }
     // 获取素材列表
     async batchGetMaterialList(options) {
@@ -528,54 +569,39 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
     // 获取永久素材
     async getMaterial(options) {
-        const { type, media_id } = options;
+        const { mediaId } = options;
         const myInit = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                media_id
+                media_id: mediaId,
             }),
         };
-        let imgFile;
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/get_material?access_token=${token}`, undefined, myInit);
-        if ('errcode' in result) {
-            throw new Error(JSON.stringify(result));
-        }
-        else {
-            return result;
-        }
+        return result;
     }
     // 获取临时素材
     async getTemporaryMaterial(options) {
-        const { media_id } = options;
+        const { mediaId } = options;
         const myInit = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                media_id
+                media_id: mediaId,
             }),
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}`, undefined, myInit);
-        if ('errcode' in result) {
-            throw new Error(JSON.stringify(result));
-        }
-        else {
-            return result;
-        }
+        return result;
     }
     async getTicket() {
         const myInit = {
@@ -585,14 +611,37 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${token}&type=jsapi`, 
-        // {
+        const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${token}&type=jsapi`, undefined, // {
         //     ticket: `ticket${Date.now()}`,
         //     expires_in: 30,
         // },
         myInit));
         const { ticket } = result;
         return ticket;
+    }
+    isJson(data) {
+        try {
+            JSON.parse(data);
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+    decryptData(sessionKey, encryptedData, iv, signature) {
+        const skBuf = Buffer.from(sessionKey, 'base64');
+        // const edBuf = Buffer.from(encryptedData, 'base64');
+        const ivBuf = Buffer.from(iv, 'base64');
+        const decipher = crypto.createDecipheriv('aes-128-cbc', skBuf, ivBuf);
+        // 设置自动 padding 为 true，删除填充补位
+        decipher.setAutoPadding(true);
+        let decoded = decipher.update(encryptedData, 'base64', 'utf8');
+        decoded += decipher.final('utf8');
+        const data = JSON.parse(decoded);
+        if (data.watermark.appid !== this.appId) {
+            throw new Error('Illegal Buffer');
+        }
+        return data;
     }
     randomString() {
         let len = 16;
