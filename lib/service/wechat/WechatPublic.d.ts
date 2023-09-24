@@ -92,7 +92,7 @@ export declare class WechatPublicInstance {
         noContent?: 0 | 1;
     }): Promise<any>;
     getArticle(options: {
-        article_id: string;
+        articleId: string;
     }): Promise<any>;
     createMaterial(options: {
         type: MediaType;

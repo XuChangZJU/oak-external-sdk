@@ -573,15 +573,15 @@ export class WechatPublicInstance {
         throw new Error(JSON.stringify(result));
     }
 
-    async getArticle(options: { article_id: string }) {
-        const { article_id } = options;
+    async getArticle(options: { articleId: string }) {
+        const { articleId } = options;
         const myInit = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                article_id,
+                article_id: articleId,
             }),
         };
         const token = await this.getAccessToken();
