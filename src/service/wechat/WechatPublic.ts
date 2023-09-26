@@ -205,13 +205,13 @@ export class WechatPublicInstance {
         };
     }
 
-    async createTag(tag: { name: string }) {
+    async createTag(params: { name: string }) {
         const myInit = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ tag }),
+            body: JSON.stringify({ tag: params }),
         };
         const token = await this.getAccessToken();
         const result = await this.access(
@@ -219,8 +219,8 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (errcode === 0) {
+        const { tag } = result;
+        if (tag) {
             return Object.assign({ success: true }, result);
         }
         return Object.assign({ success: false }, result);
@@ -242,7 +242,39 @@ export class WechatPublicInstance {
         return result;
     }
 
-    async editTag(tag: {}) {}
+    async editTag(tag: { id: number, name: string }) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tag }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/tags/update?access_token=${token}`,
+            undefined,
+            myInit
+        );
+        return result;;
+    }
+
+    async deleteTag(tag: { id: number }) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tag }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/tags/delete?access_token=${token}`,
+            undefined,
+            myInit
+        );
+        return result;;
+    }
 
     async getCurrentMenu() {
         const myInit = {
@@ -290,11 +322,7 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (errcode === 0) {
-            return Object.assign({ success: true }, result);
-        }
-        return Object.assign({ success: false }, result);
+        return result;
     }
 
     async createConditionalMenu(menuConfig: any) {
@@ -311,11 +339,7 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (errcode === 0) {
-            return Object.assign({ success: true }, result);
-        }
-        return Object.assign({ success: false }, result);
+        return result;
     }
 
     async deleteConditionalMenu(menuId: number) {
@@ -334,11 +358,20 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (errcode === 0) {
-            return Object.assign({ success: true }, result);
-        }
-        return Object.assign({ success: false }, result);
+        return result;
+    }
+
+    async deleteMenu() {
+        const myInit = {
+            method: 'GET',
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=${token}`,
+            undefined,
+            myInit
+        );
+        return result;
     }
 
     private async refreshAccessToken(url?: string, init?: RequestInit) {
