@@ -2,7 +2,8 @@ require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
-import FormData from 'form-data'
+import FormData from 'form-data';
+import { OakExternalException, OakNetworkException, OakServerProxyException } from 'oak-domain/lib/types/Exception';
 
 // 目前先支持text和news, 其他type文档：https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Service_Center_messages.html
 // type ServeMessageType = 'text' | 'news' | 'mpnews' | 'mpnewsarticle' | 'image' | 'voice' | 'video' | 'music' | 'msgmenu';/
@@ -83,11 +84,19 @@ export class WechatPublicInstance {
         if (process.env.NODE_ENV === 'development' && mockData) {
             return mockData;
         }
-        const response = await global.fetch(url, init);
+        
+        let response: Response;
+        try {
+            response = await global.fetch(url, init);
+        }
+        catch (err) {
+            throw new OakNetworkException(`访问wechatPublic接口失败，「${url}」`);
+        }
+        
 
         const { headers, status } = response;
         if (![200, 201].includes(status)) {
-            throw new Error(`微信服务器返回不正确应答：${status}`);
+            throw new OakServerProxyException(`访问wechatPublic接口失败，「${url}」,「${status}」`)
         }
         const contentType =
             (headers as any)['Content-Type'] || headers.get('Content-Type')!;
