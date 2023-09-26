@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
 import FormData from 'form-data';
+import { OakNetworkException, OakServerProxyException } from 'oak-domain/lib/types/Exception';
 export class WechatPublicInstance {
     appId;
     appSecret;
@@ -35,10 +36,16 @@ export class WechatPublicInstance {
         if (process.env.NODE_ENV === 'development' && mockData) {
             return mockData;
         }
-        const response = await global.fetch(url, init);
+        let response;
+        try {
+            response = await global.fetch(url, init);
+        }
+        catch (err) {
+            throw new OakNetworkException(`访问wechatPublic接口失败，「${url}」`);
+        }
         const { headers, status } = response;
         if (![200, 201].includes(status)) {
-            throw new Error(`微信服务器返回不正确应答：${status}`);
+            throw new OakServerProxyException(`访问wechatPublic接口失败，「${url}」,「${status}」`);
         }
         const contentType = headers['Content-Type'] || headers.get('Content-Type');
         if (contentType.includes('application/json')) {
