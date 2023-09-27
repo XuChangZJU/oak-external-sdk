@@ -11,9 +11,18 @@ export type WechatPublicEventData = {
     FromUserName: string;
     CreateTime: string;
     MsgType: string;
-    Event: string; 
+    Event: string;
     Content: string;
     EventKey: string;
     MsgID: string;
     Status: string;
-}; 
+};
+
+export declare type WechatMpEventData = {
+    ToUserName: string;
+    FromUserName: string;
+    CreateTime: number;
+    MsgType: string;
+    Content: string;
+    MsgID: string;
+};
