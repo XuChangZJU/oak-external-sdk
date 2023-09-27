@@ -3,6 +3,7 @@ import { WechatPublicInstance } from './service/wechat/WechatPublic';
 import { WechatWebInstance } from './service/wechat/WechatWeb';
 import { load } from './utils/cheerio';
 import { assert } from 'oak-domain/lib/utils/assert';
+import { OakNetworkException, } from 'oak-domain/lib/types/Exception';
 class WechatSDK {
     mpMap;
     publicMap;
@@ -54,11 +55,18 @@ class WechatSDK {
      * @returns html
      */
     async analyzePublicArticle(url) {
-        const response = await fetch(url);
+        let response;
+        try {
+            response = await fetch(url);
+        }
+        catch (err) {
+            throw new OakNetworkException(`访问analyzePublicArticle接口失败，「${url}」`);
+        }
         const html = await response.text();
         const $ = load(html);
-        const title = $('#activity-name') ? $('#activity-name').text()?.trim().replace(/\n/g, '') : '';
-        const ems = $('em');
+        const title = $('#activity-name')
+            ? $('#activity-name').text()?.trim().replace(/\n/g, '')
+            : '';
         const imgsElement = $('img');
         const imageList = [];
         for (let i = 0; i < imgsElement.length; i++) {
