@@ -3,7 +3,8 @@ import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
 import FormData from 'form-data';
-import { OakNetworkException, OakServerProxyException } from 'oak-domain/lib/types/Exception';
+import { OakExternalException, OakNetworkException, OakServerProxyException, } from 'oak-domain/lib/types/Exception';
+import { assert } from 'oak-domain/lib/utils/assert';
 export class WechatPublicInstance {
     appId;
     appSecret;
@@ -15,7 +16,7 @@ export class WechatPublicInstance {
         this.appSecret = appSecret;
         this.externalRefreshFn = externalRefreshFn;
         if (!appSecret && !externalRefreshFn) {
-            throw new Error('appSecret和externalRefreshFn必须至少支持一个');
+            assert(false, 'appSecret和externalRefreshFn必须至少支持一个');
         }
         if (accessToken) {
             this.accessToken = accessToken;
@@ -54,7 +55,7 @@ export class WechatPublicInstance {
                 if ([40001, 42001].includes(json.errcode)) {
                     return this.refreshAccessToken(url, init);
                 }
-                throw new Error(`调用微信接口返回出错，code是${json.errcode}，信息是${json.errmsg}`);
+                throw new OakExternalException('wechatPublic', json.errcode, json.errmsg);
             }
             return json;
         }
@@ -70,7 +71,7 @@ export class WechatPublicInstance {
                     if ([40001, 42001].includes(json.errcode)) {
                         return this.refreshAccessToken(url, init);
                     }
-                    throw new Error(`调用微信接口返回出错，code是${json.errcode}，信息是${json.errmsg}`);
+                    throw new OakExternalException('wechatPublic', json.errcode, json.errmsg);
                 }
                 return json;
             }
@@ -281,7 +282,7 @@ export class WechatPublicInstance {
     async getQrCode(options) {
         const { sceneId, sceneStr, expireSeconds, isPermanent } = options;
         if (!sceneId && !sceneStr) {
-            throw new Error('Missing sceneId or sceneStr');
+            assert(false, 'Missing sceneId or sceneStr');
         }
         const scene = sceneId
             ? {
@@ -417,7 +418,7 @@ export class WechatPublicInstance {
                 break;
             }
             default: {
-                throw new Error('当前消息类型暂不支持');
+                assert(false, '当前消息类型暂不支持');
             }
         }
         const token = await this.getAccessToken();
@@ -447,11 +448,7 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/freepublish/batchget?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
     async getArticle(options) {
         const { articleId } = options;
@@ -466,11 +463,7 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/freepublish/getarticle?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
     // 创建永久素材
     async createMaterial(options) {
@@ -507,11 +500,7 @@ export class WechatPublicInstance {
         });
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=${type}`, undefined, myInit);
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
     //创建图文消息内的图片获取URL
     async createImgInNewsMaterial(options) {
@@ -666,9 +655,7 @@ export class WechatPublicInstance {
         let decoded = decipher.update(encryptedData, 'base64', 'utf8');
         decoded += decipher.final('utf8');
         const data = JSON.parse(decoded);
-        if (data.watermark.appid !== this.appId) {
-            throw new Error('Illegal Buffer');
-        }
+        assert(data.watermark.appid === this.appId);
         return data;
     }
     randomString() {

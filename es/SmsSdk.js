@@ -1,5 +1,6 @@
 import { TencentSmsInstance } from './service/tencent/Sms';
 import { AliSmsInstance } from './service/ali/Sms';
+import { assert } from 'oak-domain/lib/utils/assert';
 class SmsSDK {
     tencentMap;
     aliMap;
@@ -21,7 +22,7 @@ class SmsSDK {
         }
         else if (origin === 'ali') {
             if (!apiVersion) {
-                throw new Error('阿里云短信apiVersion必须传入');
+                assert(false, '阿里云短信apiVersion必须传入');
             }
             if (this.aliMap[accessKey]) {
                 return this.aliMap[accessKey];
@@ -33,7 +34,7 @@ class SmsSDK {
             return instance;
         }
         else {
-            throw new Error(`${origin} not implemented`);
+            assert(false, `${origin} not implemented`);
         }
     }
 }

@@ -1,4 +1,9 @@
 require('../../fetch');
+import {
+    OakExternalException,
+    OakNetworkException,
+    OakServerProxyException,
+} from 'oak-domain/lib/types/Exception';
 
 export class AmapInstance {
     key: string;
@@ -18,9 +23,13 @@ export class AmapInstance {
         const result = await global.fetch(url);
         const jsonData = await result.json();
         if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
         }
-        return Promise.resolve(jsonData);
+        return jsonData;
     }
 
     async regeo(data: { longitude: number; latitude: number }) {
@@ -30,9 +39,13 @@ export class AmapInstance {
         );
         const jsonData = await result.json();
         if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
         }
-        return Promise.resolve(jsonData);
+        return jsonData;
     }
 
     async ipLoc(data: { ip: string }) {
@@ -41,9 +54,13 @@ export class AmapInstance {
         const result = await global.fetch(url);
         const jsonData = await result.json();
         if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
         }
-        return Promise.resolve(jsonData);
+        return jsonData;
     }
 
     async getDistrict(data: { keywords: string; subdistrict: string }) {
@@ -52,9 +69,13 @@ export class AmapInstance {
         const result = await global.fetch(url);
         const jsonData = await result.json();
         if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
         }
-        return Promise.resolve(jsonData);
+        return jsonData;
     }
 
     async geocode(data: { address: string }) {
@@ -63,8 +84,12 @@ export class AmapInstance {
         const result = await global.fetch(url);
         const jsonData = await result.json();
         if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
         }
-        return Promise.resolve(jsonData);
+        return jsonData;
     }
 }

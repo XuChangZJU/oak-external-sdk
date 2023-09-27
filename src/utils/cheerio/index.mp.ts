@@ -1,7 +1,8 @@
 
+import { assert } from 'oak-domain/lib/utils/assert';
 
 function load(content: string) {
-    throw new Error('cheerio load not implemented');
+   assert(false, 'cheerio load not implemented');
 }
 
 export {

@@ -2,6 +2,7 @@ import { WechatMpInstance } from './service/wechat/WechatMp';
 import { WechatPublicInstance } from './service/wechat/WechatPublic';
 import { WechatWebInstance } from './service/wechat/WechatWeb';
 import { load } from './utils/cheerio';
+import { assert } from 'oak-domain/lib/utils/assert';
 class WechatSDK {
     mpMap;
     publicMap;
@@ -44,7 +45,7 @@ class WechatSDK {
             return instance;
         }
         else {
-            throw new Error(`${type} not implemented`);
+            assert(false, `${type} not implemented`);
         }
     }
     /**
@@ -68,11 +69,6 @@ class WechatSDK {
             }
         }
         let publishDate;
-        // $('em').toArray().forEach((element, index) => {
-        //     if (index === 0) {
-        //         publishDate = $(element).text();
-        //     }
-        // });
         const lines = html.split('\n');
         for (let i = 0; i < lines.length; i++) {
             if (lines[i].includes('var ct =')) {
