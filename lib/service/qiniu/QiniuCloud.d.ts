@@ -37,6 +37,10 @@ export declare class QiniuCloudInstance {
         expireAt: number;
     }>;
     /**
+     * https://developer.qiniu.com/kodo/1308/stat
+     */
+    getKodoStat(bucket: string, key: string): Promise<any>;
+    /**
      * 计算直播流地址相关信息
      * @param publishDomain
      * @param playDomain
@@ -57,7 +61,24 @@ export declare class QiniuCloudInstance {
         expireAt: number;
     };
     getPlayBackUrl(hub: string, playBackDomain: string, streamTitle: string, start: number, end: number, method: 'GET' | 'POST' | 'PUT' | 'DELETE', host: string, rawQuery?: string): Promise<string>;
-    private getToken;
+    /**
+     * 管理端访问七牛云服务器
+     * @param path
+     * @param method
+     * @param headers
+     * @param body
+     */
+    private access;
+    /**
+     * https://developer.qiniu.com/kodo/1208/upload-token
+     * @param scope
+     * @returns
+     */
+    private generateKodoUploadToken;
+    /**
+     * https://developer.qiniu.com/kodo/1201/access-token
+     */
+    private genernateKodoAccessToken;
     private base64ToUrlSafe;
     private hmacSha1;
     private urlSafeBase64Encode;

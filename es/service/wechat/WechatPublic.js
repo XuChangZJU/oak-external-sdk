@@ -3,7 +3,8 @@ import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
 import FormData from 'form-data';
-import { OakNetworkException, OakServerProxyException } from 'oak-domain/lib/types/Exception';
+import { OakExternalException, OakNetworkException, OakServerProxyException } from 'oak-domain/lib/types/Exception';
+import assert from 'assert';
 export class WechatPublicInstance {
     appId;
     appSecret;
@@ -54,7 +55,7 @@ export class WechatPublicInstance {
                 if ([40001, 42001].includes(json.errcode)) {
                     return this.refreshAccessToken(url, init);
                 }
-                throw new Error(`调用微信接口返回出错，code是${json.errcode}，信息是${json.errmsg}`);
+                throw new OakExternalException('wechatPublic', json.errcode, json.errmsg);
             }
             return json;
         }
@@ -70,7 +71,7 @@ export class WechatPublicInstance {
                     if ([40001, 42001].includes(json.errcode)) {
                         return this.refreshAccessToken(url, init);
                     }
-                    throw new Error(`调用微信接口返回出错，code是${json.errcode}，信息是${json.errmsg}`);
+                    throw new OakExternalException('wechatPublic', json.errcode, json.errmsg);
                 }
                 return json;
             }
@@ -259,9 +260,7 @@ export class WechatPublicInstance {
     }
     async getQrCode(options) {
         const { sceneId, sceneStr, expireSeconds, isPermanent } = options;
-        if (!sceneId && !sceneStr) {
-            throw new Error('Missing sceneId or sceneStr');
-        }
+        assert(sceneId || sceneStr);
         const scene = sceneId
             ? {
                 scene_id: sceneId,
@@ -396,7 +395,7 @@ export class WechatPublicInstance {
                 break;
             }
             default: {
-                throw new Error('当前消息类型暂不支持');
+                assert(false, '当前消息类型暂不支持');
             }
         }
         const token = await this.getAccessToken();

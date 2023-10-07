@@ -1,7 +1,13 @@
 require('../../fetch');
 import crypto from 'crypto';
+import { UrlObject } from 'url';
 import { Md5 } from 'ts-md5';
 import { Buffer } from 'buffer';
+import { stringify } from 'querystring';
+import { OakExternalException, OakNetworkException } from 'oak-domain/lib/types/Exception';
+
+const QINIU_CLOUD_HOST = 'rs.qiniuapi.com';
+type X_Header = `X-Qiniu-${string}`;
 
 export class QiniuCloudInstance {
     private accessKey: string;
@@ -27,7 +33,7 @@ export class QiniuCloudInstance {
     ) {
         try {
             const scope = key ? `${bucket}:${key}` : bucket;
-            const uploadToken = this.getToken(scope);
+            const uploadToken = this.generateKodoUploadToken(scope);
             return {
                 key,
                 uploadToken,
@@ -127,6 +133,29 @@ export class QiniuCloudInstance {
     }
 
     /**
+     * https://developer.qiniu.com/kodo/1308/stat
+     */
+    async getKodoStat(bucket: string, key: string) {
+        const entry = `${bucket}:${key}`;
+        const encodedEntryURI = this.urlSafeBase64Encode(entry);
+
+        const path = `/stat/${encodedEntryURI}`;
+
+        const result = await this.access(path, undefined, 'Get', {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        });
+
+        return result as {
+            fsize: number;
+            hash: string;
+            mimeType: string;
+            type: 0 | 1 | 2 | 3;
+            putTime: number;
+            
+        };
+    }
+
+    /**
      * 计算直播流地址相关信息
      * @param publishDomain
      * @param playDomain
@@ -210,7 +239,71 @@ export class QiniuCloudInstance {
         return `https://${playBackDomain}/${streamTitle}.m3u8`;
     }
 
-    private getToken(scope: string) {
+    /**
+     * 管理端访问七牛云服务器
+     * @param path 
+     * @param method 
+     * @param headers 
+     * @param body 
+     */
+    private async access(
+        path: string, 
+        query?: UrlObject['query'], 
+        method?: RequestInit['method'], 
+        headers?: Record<string, string>, 
+        body?: RequestInit['body']
+        ) {
+        const contentType = headers && headers['Content-Type'];
+        const url = new URL(`https://${QINIU_CLOUD_HOST}${path}`);
+        if (query) {
+            url.search = typeof query === 'object' ? stringify(query) : query;
+        }
+        const accessToken = this.genernateKodoAccessToken(method || 'Get', QINIU_CLOUD_HOST, path, undefined, contentType);
+
+        let response: Response;
+        try {
+            response = await fetch(`https://${QINIU_CLOUD_HOST}${path}`, {
+                method,
+                headers: {
+                    'Authorization': `Qiniu ${accessToken}`,
+                    ...headers,
+                },
+                body,
+            });
+        }
+        catch (err) {
+            // fetch返回异常一定是网络异常
+            throw new OakNetworkException();
+        }
+        
+        
+        const responseType = response.headers.get('Content-Type') || response.headers.get('content-type');
+        if (responseType?.toLocaleLowerCase().match(/application\/json/i)) {
+            const json = await response.json();
+
+            if (response.status > 299) {
+                // 七牛服务器返回异常，根据文档一定是json
+                // https://developer.qiniu.com/kodo/3928/error-responses
+                const { code, error } = json;
+                return new OakExternalException('qiniu', code, error);
+            }
+            return json;
+        }
+        else if (responseType?.toLocaleLowerCase().match(/application\/octet-stream/i)) {
+            const result = await response.arrayBuffer();
+            return result;
+        }
+        else {
+            throw new Error(`尚不支持的content-type类型${responseType}`);
+        }
+    }
+
+    /**
+     * https://developer.qiniu.com/kodo/1208/upload-token
+     * @param scope 
+     * @returns 
+     */
+    private generateKodoUploadToken(scope: string) {
         // 构造策略
         const putPolicy = {
             scope: scope,
@@ -227,6 +320,43 @@ export class QiniuCloudInstance {
         return uploadToken;
     }
 
+    /**
+     * https://developer.qiniu.com/kodo/1201/access-token
+     */
+    private genernateKodoAccessToken(
+        method: string,
+        host: string,
+        path: string,
+        query?: string,
+        contentType?: string,
+        body?: string,
+        xHeaders?: Record<X_Header, string>
+    ) {
+        let signingStr = method + ' ' + path;
+        if (query) {
+            signingStr += '?' + query;
+        }
+        signingStr += '\nHost: ' + host;
+        if (contentType) {
+            signingStr += '\nContent-Type: ' + contentType;
+        }
+        if (xHeaders) {
+            const ks = Object.keys(xHeaders);
+            ks.sort((e1, e2) => e1 < e2 ? -1 : 1);
+            ks.forEach(
+                (k) => signingStr += `\n${k}: ${xHeaders[k as X_Header]}`,
+            );
+        }
+        signingStr += '\n\n';
+        if (body) {
+            signingStr += body;
+        }
+
+        const sign = this.hmacSha1(signingStr, this.secretKey);
+        const encodedSign = this.urlSafeBase64Encode(sign);
+        return `${this.accessKey}:${encodedSign}`;
+    }
+
     private base64ToUrlSafe(v: string) {
         return v.replace(/\//g, '_').replace(/\+/g, '-');
     }
@@ -236,6 +366,7 @@ export class QiniuCloudInstance {
         hmac.update(encodedFlags);
         return hmac.digest('base64');
     }
+
     private urlSafeBase64Encode(jsonFlags: string) {
         const encoded = Buffer.from(jsonFlags).toString('base64');
         return this.base64ToUrlSafe(encoded);
