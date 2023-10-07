@@ -39,7 +39,13 @@ export declare class QiniuCloudInstance {
     /**
      * https://developer.qiniu.com/kodo/1308/stat
      */
-    getKodoStat(bucket: string, key: string): Promise<any>;
+    getKodoStat(bucket: string, key: string): Promise<{
+        fsize: number;
+        hash: string;
+        mimeType: string;
+        type: 0 | 1 | 2 | 3;
+        putTime: number;
+    }>;
     /**
      * 计算直播流地址相关信息
      * @param publishDomain

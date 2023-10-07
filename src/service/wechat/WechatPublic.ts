@@ -3,8 +3,12 @@ import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
 import FormData from 'form-data';
-import { OakExternalException, OakNetworkException, OakServerProxyException } from 'oak-domain/lib/types/Exception';
-import assert from 'assert';
+import {
+    OakExternalException,
+    OakNetworkException,
+    OakServerProxyException,
+} from 'oak-domain/lib/types/Exception';
+import { assert } from 'oak-domain/lib/utils/assert';
 
 // 目前先支持text和news, 其他type文档：https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Service_Center_messages.html
 // type ServeMessageType = 'text' | 'news' | 'mpnews' | 'mpnewsarticle' | 'image' | 'voice' | 'video' | 'music' | 'msgmenu';/
@@ -57,7 +61,7 @@ export class WechatPublicInstance {
 
         this.externalRefreshFn = externalRefreshFn;
         if (!appSecret && !externalRefreshFn) {
-            throw new Error('appSecret和externalRefreshFn必须至少支持一个');
+            assert(false, 'appSecret和externalRefreshFn必须至少支持一个');
         }
 
         if (accessToken) {
@@ -211,13 +215,13 @@ export class WechatPublicInstance {
         };
     }
 
-    async createTag(tag: { name: string }) {
+    async createTag(params: { name: string }) {
         const myInit = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ tag }),
+            body: JSON.stringify({ tag: params }),
         };
         const token = await this.getAccessToken();
         const result = await this.access(
@@ -225,8 +229,8 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (errcode === 0) {
+        const { tag } = result;
+        if (tag) {
             return Object.assign({ success: true }, result);
         }
         return Object.assign({ success: false }, result);
@@ -248,7 +252,39 @@ export class WechatPublicInstance {
         return result;
     }
 
-    async editTag(tag: {}) {}
+    async editTag(tag: { id: number, name: string }) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tag }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/tags/update?access_token=${token}`,
+            undefined,
+            myInit
+        );
+        return result;;
+    }
+
+    async deleteTag(tag: { id: number }) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tag }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/tags/delete?access_token=${token}`,
+            undefined,
+            myInit
+        );
+        return result;;
+    }
 
     async getCurrentMenu() {
         const myInit = {
@@ -296,11 +332,7 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (errcode === 0) {
-            return Object.assign({ success: true }, result);
-        }
-        return Object.assign({ success: false }, result);
+        return result;
     }
 
     async createConditionalMenu(menuConfig: any) {
@@ -317,11 +349,7 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (errcode === 0) {
-            return Object.assign({ success: true }, result);
-        }
-        return Object.assign({ success: false }, result);
+        return result;
     }
 
     async deleteConditionalMenu(menuId: number) {
@@ -340,11 +368,20 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (errcode === 0) {
-            return Object.assign({ success: true }, result);
-        }
-        return Object.assign({ success: false }, result);
+        return result;
+    }
+
+    async deleteMenu() {
+        const myInit = {
+            method: 'GET',
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=${token}`,
+            undefined,
+            myInit
+        );
+        return result;
     }
 
     private async refreshAccessToken(url?: string, init?: RequestInit) {
@@ -376,7 +413,9 @@ export class WechatPublicInstance {
         isPermanent?: boolean;
     }) {
         const { sceneId, sceneStr, expireSeconds, isPermanent } = options;
-        assert(sceneId || sceneStr);
+        if (!sceneId && !sceneStr) {
+            assert(false, 'Missing sceneId or sceneStr');
+        }
         const scene = sceneId
             ? {
                   scene_id: sceneId,
@@ -570,11 +609,7 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
 
     async getArticle(options: { articleId: string }) {
@@ -594,11 +629,7 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
 
     // 创建永久素材
@@ -649,11 +680,7 @@ export class WechatPublicInstance {
             undefined,
             myInit
         );
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
 
     //创建图文消息内的图片获取URL
@@ -864,10 +891,7 @@ export class WechatPublicInstance {
         decoded += decipher.final('utf8');
 
         const data = JSON.parse(decoded);
-
-        if (data.watermark.appid !== this.appId) {
-            throw new Error('Illegal Buffer');
-        }
+        assert(data.watermark.appid === this.appId);
 
         return data;
     }

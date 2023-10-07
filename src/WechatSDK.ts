@@ -2,6 +2,12 @@ import { WechatMpInstance } from './service/wechat/WechatMp';
 import { WechatPublicInstance } from './service/wechat/WechatPublic';
 import { WechatWebInstance } from './service/wechat/WechatWeb';
 import { load } from './utils/cheerio';
+import { assert } from 'oak-domain/lib/utils/assert';
+import {
+    OakExternalException,
+    OakNetworkException,
+    OakServerProxyException,
+} from 'oak-domain/lib/types/Exception';
 
 class WechatSDK {
     mpMap: Record<string, WechatMpInstance>;
@@ -26,7 +32,12 @@ class WechatSDK {
             if (this.mpMap[appId]) {
                 return this.mpMap[appId];
             }
-            const instance = new WechatMpInstance(appId, appSecret, accessToken, externalRefreshFn);
+            const instance = new WechatMpInstance(
+                appId,
+                appSecret,
+                accessToken,
+                externalRefreshFn
+            );
             Object.assign(this.mpMap, {
                 [appId]: instance,
             });
@@ -35,7 +46,12 @@ class WechatSDK {
             if (this.publicMap[appId]) {
                 return this.publicMap[appId];
             }
-            const instance = new WechatPublicInstance(appId, appSecret, accessToken, externalRefreshFn);
+            const instance = new WechatPublicInstance(
+                appId,
+                appSecret,
+                accessToken,
+                externalRefreshFn
+            );
             Object.assign(this.publicMap, {
                 [appId]: instance,
             });
@@ -44,13 +60,18 @@ class WechatSDK {
             if (this.webMap[appId]) {
                 return this.webMap[appId];
             }
-            const instance = new WechatWebInstance(appId, appSecret, accessToken, externalRefreshFn);
+            const instance = new WechatWebInstance(
+                appId,
+                appSecret,
+                accessToken,
+                externalRefreshFn
+            );
             Object.assign(this.webMap, {
                 [appId]: instance,
             });
             return instance;
         } else {
-            throw new Error(`${type} not implemented`);
+            assert(false, `${type} not implemented`);
         }
     }
 
@@ -64,11 +85,19 @@ class WechatSDK {
         publishDate: number | undefined;
         imageList: string[];
     }> {
-        const response = await fetch(url);
+        let response: Response;
+        try {
+            response = await fetch(url);
+        } catch (err) {
+            throw new OakNetworkException(
+                `访问analyzePublicArticle接口失败，「${url}」`
+            );
+        }
         const html = await response.text();
         const $ = load(html);
-        const title = $('#activity-name') ? $('#activity-name').text()?.trim().replace(/\n/g, '') : '';
-        const ems = $('em');
+        const title = $('#activity-name')
+            ? $('#activity-name').text()?.trim().replace(/\n/g, '')
+            : '';
         const imgsElement = $('img');
         const imageList: string[] = [];
         for (let i = 0; i < imgsElement.length; i++) {
@@ -79,15 +108,10 @@ class WechatSDK {
             }
         }
         let publishDate;
-        // $('em').toArray().forEach((element, index) => {
-        //     if (index === 0) {
-        //         publishDate = $(element).text();
-        //     }
-        // });
         const lines = html.split('\n');
         for (let i = 0; i < lines.length; i++) {
             if (lines[i].includes('var ct =')) {
-                const timeStr = lines[i].split('"')[1] + '000'
+                const timeStr = lines[i].split('"')[1] + '000';
                 publishDate = Number(timeStr);
                 break;
             }
@@ -96,7 +120,7 @@ class WechatSDK {
             title,
             publishDate,
             imageList,
-        }        
+        };
     }
 }
 

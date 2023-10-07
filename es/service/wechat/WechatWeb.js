@@ -1,6 +1,8 @@
 require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
+import { OakExternalException, OakNetworkException, OakServerProxyException, } from 'oak-domain/lib/types/Exception';
+import { assert } from 'oak-domain/lib/utils/assert';
 export class WechatWebInstance {
     appId;
     appSecret;
@@ -12,7 +14,7 @@ export class WechatWebInstance {
         this.appSecret = appSecret;
         this.externalRefreshFn = externalRefreshFn;
         if (!appSecret && !externalRefreshFn) {
-            throw new Error('appSecret和externalRefreshFn必须至少支持一个');
+            assert(false, 'appSecret和externalRefreshFn必须至少支持一个');
         }
         if (accessToken) {
             this.accessToken = accessToken;
@@ -30,13 +32,19 @@ export class WechatWebInstance {
         }
     }
     async access(url, mockData, init) {
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'development' && mockData) {
             return mockData;
         }
-        const response = await global.fetch(url, init);
+        let response;
+        try {
+            response = await global.fetch(url, init);
+        }
+        catch (err) {
+            throw new OakNetworkException(`访问wechat接口失败，「${url}」`);
+        }
         const { headers, status } = response;
         if (![200, 201].includes(status)) {
-            throw new Error(`微信服务器返回不正确应答：${status}`);
+            throw new OakServerProxyException(`访问wechat接口失败，「${url}」,「${status}」`);
         }
         const contentType = headers['Content-Type'] || headers.get('Content-Type');
         if (contentType.includes('application/json')) {
@@ -45,7 +53,7 @@ export class WechatWebInstance {
                 if ([40001, 42001].includes(json.errcode)) {
                     return this.refreshAccessToken();
                 }
-                throw new Error(`调用微信接口返回出错，code是${json.errcode}，信息是${json.errmsg}`);
+                throw new OakExternalException('wechatPublic', json.errcode, json.errmsg);
             }
             return json;
         }
@@ -91,9 +99,7 @@ export class WechatWebInstance {
         let decoded = decipher.update(encryptedData, 'base64', 'utf8');
         decoded += decipher.final('utf8');
         const data = JSON.parse(decoded);
-        if (data.watermark.appid !== this.appId) {
-            throw new Error('Illegal Buffer');
-        }
+        assert(data.watermark.appid === this.appId);
         return data;
     }
 }

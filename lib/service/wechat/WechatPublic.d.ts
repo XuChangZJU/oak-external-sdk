@@ -53,16 +53,23 @@ export declare class WechatPublicInstance {
         gender: string | undefined;
         avatar: string;
     }>;
-    createTag(tag: {
+    createTag(params: {
         name: string;
     }): Promise<any>;
     getTags(): Promise<any>;
-    editTag(tag: {}): Promise<void>;
+    editTag(tag: {
+        id: number;
+        name: string;
+    }): Promise<any>;
+    deleteTag(tag: {
+        id: number;
+    }): Promise<any>;
     getCurrentMenu(): Promise<any>;
     getMenu(): Promise<any>;
     createMenu(menuConfig: any): Promise<any>;
     createConditionalMenu(menuConfig: any): Promise<any>;
     deleteConditionalMenu(menuId: number): Promise<any>;
+    deleteMenu(): Promise<any>;
     private refreshAccessToken;
     getQrCode(options: {
         sceneId?: number;

@@ -1,4 +1,9 @@
 require('../../fetch');
+import {
+    OakExternalException,
+    OakNetworkException,
+    OakServerProxyException,
+} from 'oak-domain/lib/types/Exception';
 
 export class AmapInstance {
     key: string;
@@ -15,56 +20,102 @@ export class AmapInstance {
         )},${from[1].toFixed(6)}&destination=${to[0].toFixed(
             6
         )},${to[1].toFixed(6)}&strategy=10&key=${this.key}`;
-        const result = await global.fetch(url);
-        const jsonData = await result.json();
-        if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+        let response: Response;
+        try {
+            response = await global.fetch(url);
+        } catch (err) {
+            throw new OakNetworkException(
+                `访问amap接口失败，「${url}」`
+            );
         }
-        return Promise.resolve(jsonData);
+        const jsonData = await response.json();
+        if (jsonData.status !== '1') {
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
+        }
+        return jsonData;
     }
 
     async regeo(data: { longitude: number; latitude: number }) {
         const { longitude, latitude } = data;
-        const result = await global.fetch(
-            `https://restapi.amap.com/v3/geocode/regeo?location=${longitude},${latitude}&key=${this.key}`
-        );
-        const jsonData = await result.json();
-        if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+        const url = `https://restapi.amap.com/v3/geocode/regeo?location=${longitude},${latitude}&key=${this.key}`;
+        let response: Response;
+        try {
+            response = await global.fetch(url);
+        } catch (err) {
+            throw new OakNetworkException(`访问amap接口失败，「${url}」`);
         }
-        return Promise.resolve(jsonData);
+        const jsonData = await response.json();
+        if (jsonData.status !== '1') {
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
+        }
+        return jsonData;
     }
 
     async ipLoc(data: { ip: string }) {
         const { ip } = data;
         const url = `https://restapi.amap.com/v3/ip?key=${this.key}&ip=${ip}`;
-        const result = await global.fetch(url);
-        const jsonData = await result.json();
-        if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+        let response: Response;
+        try {
+            response = await global.fetch(url);
+        } catch (err) {
+            throw new OakNetworkException(`访问amap接口失败，「${url}」`);
         }
-        return Promise.resolve(jsonData);
+        const jsonData = await response.json();
+        if (jsonData.status !== '1') {
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
+        }
+        return jsonData;
     }
 
     async getDistrict(data: { keywords: string; subdistrict: string }) {
         const { keywords, subdistrict } = data;
         const url = `https://restapi.amap.com/v3/config/district?keywords=${keywords}&subdistrict=${subdistrict}&key=${this.key}`;
-        const result = await global.fetch(url);
-        const jsonData = await result.json();
-        if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+        let response: Response;
+        try {
+            response = await global.fetch(url);
+        } catch (err) {
+            throw new OakNetworkException(`访问amap接口失败，「${url}」`);
         }
-        return Promise.resolve(jsonData);
+        const jsonData = await response.json();
+        if (jsonData.status !== '1') {
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
+        }
+        return jsonData;
     }
 
     async geocode(data: { address: string }) {
         const { address } = data;
         const url = `https://restapi.amap.com/v3/geocode/geo?address=${address}&key=${this.key}`;
-        const result = await global.fetch(url);
-        const jsonData = await result.json();
-        if (jsonData.status !== '1') {
-            throw new Error(JSON.stringify(jsonData));
+        let response: Response;
+        try {
+            response = await global.fetch(url);
+        } catch (err) {
+            throw new OakNetworkException(`访问amap接口失败，「${url}」`);
         }
-        return Promise.resolve(jsonData);
+        const jsonData = await response.json();
+        if (jsonData.status !== '1') {
+            throw new OakExternalException(
+                'amap',
+                jsonData.infocode,
+                jsonData.info
+            );
+        }
+        return jsonData;
     }
 }

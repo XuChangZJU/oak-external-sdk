@@ -3,8 +3,8 @@ import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
 import FormData from 'form-data';
-import { OakExternalException, OakNetworkException, OakServerProxyException } from 'oak-domain/lib/types/Exception';
-import assert from 'assert';
+import { OakExternalException, OakNetworkException, OakServerProxyException, } from 'oak-domain/lib/types/Exception';
+import { assert } from 'oak-domain/lib/utils/assert';
 export class WechatPublicInstance {
     appId;
     appSecret;
@@ -16,7 +16,7 @@ export class WechatPublicInstance {
         this.appSecret = appSecret;
         this.externalRefreshFn = externalRefreshFn;
         if (!appSecret && !externalRefreshFn) {
-            throw new Error('appSecret和externalRefreshFn必须至少支持一个');
+            assert(false, 'appSecret和externalRefreshFn必须至少支持一个');
         }
         if (accessToken) {
             this.accessToken = accessToken;
@@ -139,18 +139,18 @@ export class WechatPublicInstance {
             avatar: headimgurl,
         };
     }
-    async createTag(tag) {
+    async createTag(params) {
         const myInit = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ tag }),
+            body: JSON.stringify({ tag: params }),
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/create?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (errcode === 0) {
+        const { tag } = result;
+        if (tag) {
             return Object.assign({ success: true }, result);
         }
         return Object.assign({ success: false }, result);
@@ -166,7 +166,32 @@ export class WechatPublicInstance {
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/get?access_token=${token}`, undefined, myInit);
         return result;
     }
-    async editTag(tag) { }
+    async editTag(tag) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tag }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/update?access_token=${token}`, undefined, myInit);
+        return result;
+        ;
+    }
+    async deleteTag(tag) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tag }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/delete?access_token=${token}`, undefined, myInit);
+        return result;
+        ;
+    }
     async getCurrentMenu() {
         const myInit = {
             method: 'GET',
@@ -199,11 +224,7 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (errcode === 0) {
-            return Object.assign({ success: true }, result);
-        }
-        return Object.assign({ success: false }, result);
+        return result;
     }
     async createConditionalMenu(menuConfig) {
         const myInit = {
@@ -215,11 +236,7 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/addconditional?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (errcode === 0) {
-            return Object.assign({ success: true }, result);
-        }
-        return Object.assign({ success: false }, result);
+        return result;
     }
     async deleteConditionalMenu(menuId) {
         const myInit = {
@@ -233,11 +250,15 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/delconditional?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (errcode === 0) {
-            return Object.assign({ success: true }, result);
-        }
-        return Object.assign({ success: false }, result);
+        return result;
+    }
+    async deleteMenu() {
+        const myInit = {
+            method: 'GET',
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=${token}`, undefined, myInit);
+        return result;
     }
     async refreshAccessToken(url, init) {
         const result = this.externalRefreshFn
@@ -260,7 +281,9 @@ export class WechatPublicInstance {
     }
     async getQrCode(options) {
         const { sceneId, sceneStr, expireSeconds, isPermanent } = options;
-        assert(sceneId || sceneStr);
+        if (!sceneId && !sceneStr) {
+            assert(false, 'Missing sceneId or sceneStr');
+        }
         const scene = sceneId
             ? {
                 scene_id: sceneId,
@@ -425,11 +448,7 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/freepublish/batchget?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
     async getArticle(options) {
         const { articleId } = options;
@@ -444,11 +463,7 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/freepublish/getarticle?access_token=${token}`, undefined, myInit);
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
     // 创建永久素材
     async createMaterial(options) {
@@ -485,11 +500,7 @@ export class WechatPublicInstance {
         });
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=${type}`, undefined, myInit);
-        const { errcode } = result;
-        if (!errcode) {
-            return result;
-        }
-        throw new Error(JSON.stringify(result));
+        return result;
     }
     //创建图文消息内的图片获取URL
     async createImgInNewsMaterial(options) {
@@ -644,9 +655,7 @@ export class WechatPublicInstance {
         let decoded = decipher.update(encryptedData, 'base64', 'utf8');
         decoded += decipher.final('utf8');
         const data = JSON.parse(decoded);
-        if (data.watermark.appid !== this.appId) {
-            throw new Error('Illegal Buffer');
-        }
+        assert(data.watermark.appid === this.appId);
         return data;
     }
     randomString() {
