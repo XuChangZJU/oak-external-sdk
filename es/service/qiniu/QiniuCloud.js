@@ -5,6 +5,39 @@ import { Buffer } from 'buffer';
 import { stringify } from 'querystring';
 import { OakExternalException, OakNetworkException } from 'oak-domain/lib/types/Exception';
 const QINIU_CLOUD_HOST = 'rs.qiniuapi.com';
+/**
+ * from qiniu sdk
+ * @param date
+ * @param layout
+ * @returns
+ */
+function formatUTC(date, layout) {
+    function pad(num, digit) {
+        const d = digit || 2;
+        let result = num.toString();
+        while (result.length < d) {
+            result = '0' + result;
+        }
+        return result;
+    }
+    const d = new Date(date);
+    const year = d.getUTCFullYear();
+    const month = d.getUTCMonth() + 1;
+    const day = d.getUTCDate();
+    const hour = d.getUTCHours();
+    const minute = d.getUTCMinutes();
+    const second = d.getUTCSeconds();
+    const millisecond = d.getUTCMilliseconds();
+    let result = layout || 'YYYY-MM-DDTHH:MM:ss.SSSZ';
+    result = result.replace(/YYYY/g, year.toString())
+        .replace(/MM/g, pad(month))
+        .replace(/DD/g, pad(day))
+        .replace(/HH/g, pad(hour))
+        .replace(/mm/g, pad(minute))
+        .replace(/ss/g, pad(second))
+        .replace(/SSS/g, pad(millisecond, 3));
+    return result;
+}
 export class QiniuCloudInstance {
     accessKey;
     secretKey;
@@ -94,15 +127,32 @@ export class QiniuCloudInstance {
     }
     /**
      * https://developer.qiniu.com/kodo/1308/stat
+     * 文档里写的是GET方法，从nodejs-sdk里看是POST方法
      */
-    async getKodoStat(bucket, key) {
+    async getKodoFileStat(bucket, key, mockData) {
         const entry = `${bucket}:${key}`;
         const encodedEntryURI = this.urlSafeBase64Encode(entry);
         const path = `/stat/${encodedEntryURI}`;
-        const result = await this.access(path, undefined, 'Get', {
+        const result = await this.access(path, {
             'Content-Type': 'application/x-www-form-urlencoded',
-        });
+        }, undefined, 'POST', undefined, mockData);
         return result;
+    }
+    /**
+     * https://developer.qiniu.com/kodo/1257/delete
+     * @param bucket
+     * @param key
+     * @param mockData
+     * @returns
+     */
+    async removeKodoFile(bucket, key, mockData) {
+        const entry = `${bucket}:${key}`;
+        const encodedEntryURI = this.urlSafeBase64Encode(entry);
+        const path = `/delete/${encodedEntryURI}`;
+        await this.access(path, {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }, undefined, 'POST', undefined, mockData);
+        return true;
     }
     /**
      * 计算直播流地址相关信息
@@ -168,16 +218,21 @@ export class QiniuCloudInstance {
      * @param headers
      * @param body
      */
-    async access(path, query, method, headers, body) {
-        const contentType = headers && headers['Content-Type'];
+    async access(path, headers, query, method, body, mockData) {
         const url = new URL(`https://${QINIU_CLOUD_HOST}${path}`);
+        if (process.env.NODE_ENV === 'development' && mockData) {
+            console.warn(`mocking access qiniu api: url: ${url.toString()}, body: ${JSON.stringify(body)}, method: ${method}`, mockData);
+            return mockData;
+        }
         if (query) {
             url.search = typeof query === 'object' ? stringify(query) : query;
         }
-        const accessToken = this.genernateKodoAccessToken(method || 'Get', QINIU_CLOUD_HOST, path, undefined, contentType);
+        const now = formatUTC(new Date(), 'YYYYMMDDTHHmmssZ');
+        headers['X-Qiniu-Date'] = now;
+        const accessToken = this.genernateKodoAccessToken(method || 'GET', QINIU_CLOUD_HOST, path, headers);
         let response;
         try {
-            response = await fetch(`https://${QINIU_CLOUD_HOST}${path}`, {
+            response = await fetch(url.toString(), {
                 method,
                 headers: {
                     'Authorization': `Qiniu ${accessToken}`,
@@ -194,10 +249,10 @@ export class QiniuCloudInstance {
         if (responseType?.toLocaleLowerCase().match(/application\/json/i)) {
             const json = await response.json();
             if (response.status > 299) {
-                // 七牛服务器返回异常，根据文档一定是json
+                // 七牛服务器返回异常，根据文档一定是json（实测发现返回和文档不一样）
                 // https://developer.qiniu.com/kodo/3928/error-responses
-                const { code, error } = json;
-                return new OakExternalException('qiniu', code, error);
+                const { error_code, error } = json;
+                return new OakExternalException('qiniu', error_code, error);
             }
             return json;
         }
@@ -230,27 +285,29 @@ export class QiniuCloudInstance {
     /**
      * https://developer.qiniu.com/kodo/1201/access-token
      */
-    genernateKodoAccessToken(method, host, path, query, contentType, body, xHeaders) {
+    genernateKodoAccessToken(method, host, path, headers, query, body) {
         let signingStr = method + ' ' + path;
         if (query) {
             signingStr += '?' + query;
         }
         signingStr += '\nHost: ' + host;
+        const contentType = headers && headers['Content-Type'];
         if (contentType) {
             signingStr += '\nContent-Type: ' + contentType;
         }
-        if (xHeaders) {
-            const ks = Object.keys(xHeaders);
+        if (headers) {
+            const ks = Object.keys(headers).filter(ele => ele.startsWith('X-Qiniu-'));
             ks.sort((e1, e2) => e1 < e2 ? -1 : 1);
-            ks.forEach((k) => signingStr += `\n${k}: ${xHeaders[k]}`);
+            ks.forEach((k) => signingStr += `\n${k}: ${headers[k]}`);
         }
         signingStr += '\n\n';
         if (body) {
             signingStr += body;
         }
         const sign = this.hmacSha1(signingStr, this.secretKey);
-        const encodedSign = this.urlSafeBase64Encode(sign);
-        return `${this.accessKey}:${encodedSign}`;
+        const encodedSign = this.base64ToUrlSafe(sign);
+        const result = `${this.accessKey}:${encodedSign}`;
+        return result;
     }
     base64ToUrlSafe(v) {
         return v.replace(/\//g, '_').replace(/\+/g, '-');

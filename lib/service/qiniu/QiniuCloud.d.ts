@@ -38,14 +38,23 @@ export declare class QiniuCloudInstance {
     }>;
     /**
      * https://developer.qiniu.com/kodo/1308/stat
+     * 文档里写的是GET方法，从nodejs-sdk里看是POST方法
      */
-    getKodoStat(bucket: string, key: string): Promise<{
+    getKodoFileStat(bucket: string, key: string, mockData?: any): Promise<{
         fsize: number;
         hash: string;
         mimeType: string;
         type: 0 | 1 | 2 | 3;
         putTime: number;
     }>;
+    /**
+     * https://developer.qiniu.com/kodo/1257/delete
+     * @param bucket
+     * @param key
+     * @param mockData
+     * @returns
+     */
+    removeKodoFile(bucket: string, key: string, mockData?: any): Promise<boolean>;
     /**
      * 计算直播流地址相关信息
      * @param publishDomain
