@@ -10,7 +10,7 @@ export declare class QiniuCloudInstance {
      * @param key
      * @returns
      */
-    getUploadInfo(uploadHost: string, bucket: string, key?: string): {
+    getKodoUploadInfo(uploadHost: string, bucket: string, key?: string): {
         key: string | undefined;
         uploadToken: string;
         uploadHost: string;

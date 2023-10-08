@@ -63,7 +63,7 @@ export class QiniuCloudInstance {
      * @param key
      * @returns
      */
-    getUploadInfo(
+    getKodoUploadInfo(
         uploadHost: string,
         bucket: string,
         key?: string

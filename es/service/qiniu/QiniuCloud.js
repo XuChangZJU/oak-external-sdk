@@ -53,7 +53,7 @@ export class QiniuCloudInstance {
      * @param key
      * @returns
      */
-    getUploadInfo(uploadHost, bucket, key) {
+    getKodoUploadInfo(uploadHost, bucket, key) {
         try {
             const scope = key ? `${bucket}:${key}` : bucket;
             const uploadToken = this.generateKodoUploadToken(scope);
