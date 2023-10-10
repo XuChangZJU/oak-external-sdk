@@ -246,13 +246,19 @@ export class QiniuCloudInstance {
             throw new OakNetworkException();
         }
         const responseType = response.headers.get('Content-Type') || response.headers.get('content-type');
+        // qiniu如果返回空结果，类型也是application/json(delete kodo file)
+        const contentLength = response.headers.get('Content-Length') || response.headers.get('content-length');
+        if (Number(contentLength) === 0) {
+            return;
+        }
         if (responseType?.toLocaleLowerCase().match(/application\/json/i)) {
             const json = await response.json();
             if (response.status > 299) {
                 // 七牛服务器返回异常，根据文档一定是json（实测发现返回和文档不一样）
                 // https://developer.qiniu.com/kodo/3928/error-responses
+                // qiniu的status是重要的返回信息
                 const { error_code, error } = json;
-                return new OakExternalException('qiniu', error_code, error);
+                throw new OakExternalException('qiniu', error_code, error, { status: response.status });
             }
             return json;
         }
