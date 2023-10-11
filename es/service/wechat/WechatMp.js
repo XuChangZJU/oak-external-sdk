@@ -1,6 +1,7 @@
 require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
+import FormData from 'form-data';
 import { OakExternalException, OakNetworkException, OakServerProxyException, } from 'oak-domain/lib/types/Exception';
 import { assert } from 'oak-domain/lib/utils/assert';
 export class WechatMpInstance {
@@ -163,5 +164,113 @@ export class WechatMpInstance {
             }),
             method: 'post',
         });
+    }
+    //创建临时素材
+    async createTemporaryMaterial(options) {
+        const { type, media, filetype, filename } = options;
+        const formData = new FormData();
+        formData.append('media', media, {
+            contentType: filetype,
+            filename: filename, // 微信识别需要
+        });
+        const getLength = () => {
+            return new Promise((resolve, reject) => {
+                formData.getLength((err, length) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(length);
+                    }
+                });
+            });
+        };
+        const contentLength = await getLength();
+        const headers = formData.getHeaders();
+        headers['Content-Length'] = contentLength;
+        const myInit = {
+            method: 'POST',
+            headers,
+        };
+        Object.assign(myInit, {
+            body: formData,
+        });
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`, myInit);
+        return result;
+    }
+    async sendServeMessage(options) {
+        const { openId, type } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        switch (type) {
+            case 'text': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'text',
+                        text: {
+                            content: options.content,
+                        },
+                    }),
+                });
+                break;
+            }
+            case 'image': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'image',
+                        image: {
+                            media_id: options.mediaId,
+                        },
+                    }),
+                });
+                break;
+            }
+            case 'news': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'link',
+                        link: {
+                            title: options.title,
+                            description: options.description,
+                            url: options.url,
+                            thumb_url: options.picurl,
+                        },
+                    }),
+                });
+                break;
+            }
+            case 'mp': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'miniprogrampage',
+                        miniprogrampage: {
+                            title: options.data.title,
+                            pagepath: options.data.pagepath,
+                            thumb_media_id: options.data.thumbnailId,
+                        },
+                    }),
+                });
+                break;
+            }
+            default: {
+                assert(false, '当前消息类型暂不支持');
+            }
+        }
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${token}`, myInit);
+        const { errcode } = result;
+        if (errcode === 0) {
+            return Object.assign({ success: true }, result);
+        }
+        return Object.assign({ success: false }, result);
     }
 }

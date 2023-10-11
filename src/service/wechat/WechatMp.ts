@@ -1,12 +1,50 @@
 require('../../fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
+import URL from 'url';
+import FormData from 'form-data';
 import {
     OakExternalException,
     OakNetworkException,
     OakServerProxyException,
 } from 'oak-domain/lib/types/Exception';
 import { assert } from 'oak-domain/lib/utils/assert';
+
+type TextServeMessageOption = {
+    openId: string;
+    type: 'text';
+    content: string;
+};
+
+type ImageServeMessageOption = {
+    openId: string;
+    type: 'image';
+    mediaId: string;
+};
+
+type NewsServeMessageOption = {
+    openId: string;
+    type: 'news';
+    title: string;
+    description?: string;
+    url: string;
+    picurl?: string;
+};
+
+type MpServeMessageOption = {
+    openId: string;
+    type: 'mp';
+    data: {
+        title: string;
+        appId?: string;
+        pagepath: string;
+        thumbnailId: string;
+    };
+};
+
+type MediaType = 'image' | 'voice' | 'video' | 'thumb';
+type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption | ImageServeMessageOption;
+
 
 export class WechatMpInstance {
     appId: string;
@@ -118,8 +156,8 @@ export class WechatMpInstance {
         const result = this.externalRefreshFn
             ? await this.externalRefreshFn(this.appId)
             : await this.access(
-                  `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
-              );
+                `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
+            );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         if (process.env.NODE_ENV === 'development') {
@@ -271,5 +309,128 @@ export class WechatMpInstance {
                 method: 'post',
             }
         );
+    }
+
+
+
+    //创建临时素材
+    async createTemporaryMaterial(options: {
+        type: MediaType;
+        media: any;
+        filename: string;
+        filetype: string;
+    }) {
+        const { type, media, filetype, filename } = options;
+        const formData = new FormData();
+        formData.append('media', media, {
+            contentType: filetype, // 微信识别需要
+            filename: filename, // 微信识别需要
+        });
+        const getLength = () => {
+            return new Promise((resolve, reject) => {
+                formData.getLength((err, length) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(length);
+                    }
+                });
+            });
+        };
+        const contentLength = await getLength();
+        const headers = formData.getHeaders();
+        headers['Content-Length'] = contentLength;
+        const myInit = {
+            method: 'POST',
+            headers,
+        };
+
+        Object.assign(myInit, {
+            body: formData,
+        });
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`,
+            myInit,
+        );
+        return result;
+    }
+
+    async sendServeMessage(options: ServeMessageOption) {
+        const { openId, type } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        switch (type) {
+            case 'text': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'text',
+                        text: {
+                            content: options.content,
+                        },
+                    }),
+                });
+                break;
+            }
+            case 'image': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'image',
+                        image: {
+                            media_id: options.mediaId,
+                        },
+                    }),
+                });
+                break;
+            }
+            case 'news': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'link',
+                        link: {
+                            title: options.title,
+                            description: options.description,
+                            url: options.url,
+                            thumb_url: options.picurl,
+                        },
+                    }),
+                });
+                break;
+            }
+            case 'mp': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'miniprogrampage',
+                        miniprogrampage: {
+                            title: options.data.title,
+                            pagepath: options.data.pagepath,
+                            thumb_media_id: options.data.thumbnailId,
+                        },
+                    }),
+                });
+                break;
+            }
+            default: {
+                assert(false, '当前消息类型暂不支持');
+            }
+        }
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${token}`,
+            myInit
+        );
+        const { errcode } = result;
+        if (errcode === 0) {
+            return Object.assign({ success: true }, result);
+        }
+        return Object.assign({ success: false }, result);
     }
 }

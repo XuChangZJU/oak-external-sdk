@@ -383,6 +383,18 @@ export class WechatPublicInstance {
                 });
                 break;
             }
+            case 'image': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'image',
+                        image: {
+                            media_id: options.mediaId,
+                        },
+                    }),
+                });
+                break;
+            }
             case 'news': {
                 Object.assign(myInit, {
                     body: JSON.stringify({

@@ -3,6 +3,11 @@ type TextServeMessageOption = {
     type: 'text';
     content: string;
 };
+type ImageServeMessageOption = {
+    openId: string;
+    type: 'image';
+    mediaId: string;
+};
 type NewsServeMessageOption = {
     openId: string;
     type: 'news';
@@ -21,7 +26,7 @@ type MpServeMessageOption = {
         thumbnailId: string;
     };
 };
-type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption;
+type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption | ImageServeMessageOption;
 type MediaType = 'image' | 'voice' | 'video' | 'thumb';
 export declare class WechatPublicInstance {
     appId: string;

@@ -18,6 +18,13 @@ type TextServeMessageOption = {
     type: 'text';
     content: string;
 };
+
+type ImageServeMessageOption = {
+    openId: string;
+    type: 'image';
+    mediaId: string;
+};
+
 type NewsServeMessageOption = {
     openId: string;
     type: 'news';
@@ -38,7 +45,7 @@ type MpServeMessageOption = {
     };
 };
 
-type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption;
+type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption | ImageServeMessageOption;
 
 type MediaType = 'image' | 'voice' | 'video' | 'thumb';
 
@@ -89,7 +96,7 @@ export class WechatPublicInstance {
         if (process.env.NODE_ENV === 'development' && mockData) {
             return mockData;
         }
-        
+
         let response: Response;
         try {
             response = await global.fetch(url, init);
@@ -97,7 +104,7 @@ export class WechatPublicInstance {
         catch (err) {
             throw new OakNetworkException(`访问wechatPublic接口失败，「${url}」`);
         }
-        
+
 
         const { headers, status } = response;
         if (![200, 201].includes(status)) {
@@ -388,9 +395,9 @@ export class WechatPublicInstance {
         const result = this.externalRefreshFn
             ? await this.externalRefreshFn(this.appId)
             : await this.access(
-                  `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
-                  //{ access_token: 'mockToken', expires_in: 600 }
-              );
+                `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
+                //{ access_token: 'mockToken', expires_in: 600 }
+            );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         // 生成下次刷新的定时器
@@ -418,11 +425,11 @@ export class WechatPublicInstance {
         }
         const scene = sceneId
             ? {
-                  scene_id: sceneId,
-              }
+                scene_id: sceneId,
+            }
             : {
-                  scene_str: sceneStr,
-              };
+                scene_str: sceneStr,
+            };
         let actionName = sceneId ? 'QR_SCENE' : 'QR_STR_SCENE';
         let myInit = {
             method: 'POST',
@@ -528,6 +535,18 @@ export class WechatPublicInstance {
                         msgtype: 'text',
                         text: {
                             content: options.content,
+                        },
+                    }),
+                });
+                break;
+            }
+            case 'image': {
+                Object.assign(myInit, {
+                    body: JSON.stringify({
+                        touser: openId,
+                        msgtype: 'image',
+                        image: {
+                            media_id: options.mediaId,
                         },
                     }),
                 });

@@ -1,3 +1,33 @@
+type TextServeMessageOption = {
+    openId: string;
+    type: 'text';
+    content: string;
+};
+type ImageServeMessageOption = {
+    openId: string;
+    type: 'image';
+    mediaId: string;
+};
+type NewsServeMessageOption = {
+    openId: string;
+    type: 'news';
+    title: string;
+    description?: string;
+    url: string;
+    picurl?: string;
+};
+type MpServeMessageOption = {
+    openId: string;
+    type: 'mp';
+    data: {
+        title: string;
+        appId?: string;
+        pagepath: string;
+        thumbnailId: string;
+    };
+};
+type MediaType = 'image' | 'voice' | 'video' | 'thumb';
+type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption | ImageServeMessageOption;
 export declare class WechatMpInstance {
     appId: string;
     appSecret?: string;
@@ -50,4 +80,12 @@ export declare class WechatMpInstance {
         state?: 'developer' | 'trial' | 'formal';
         lang?: 'zh_CN' | 'zh_TW' | 'en_US' | 'zh_HK';
     }): Promise<any>;
+    createTemporaryMaterial(options: {
+        type: MediaType;
+        media: any;
+        filename: string;
+        filetype: string;
+    }): Promise<any>;
+    sendServeMessage(options: ServeMessageOption): Promise<any>;
 }
+export {};
