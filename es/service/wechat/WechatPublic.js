@@ -190,7 +190,76 @@ export class WechatPublicInstance {
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/delete?access_token=${token}`, undefined, myInit);
         return result;
-        ;
+    }
+    async getTagUsers(tagid) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tagid, next_openid: "" })
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/user/tag/get?access_token=${token}`, undefined, myInit);
+        return result;
+    }
+    async batchtagging(openid_list, tagid) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ openid_list, tagid })
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/members/batchtagging?access_token=${token}`, undefined, myInit);
+        return result;
+    }
+    async batchuntagging(openid_list, tagid) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ openid_list, tagid })
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/members/batchuntagging?access_token=${token}`, undefined, myInit);
+        return result;
+    }
+    async getUsers(nextOpenId) {
+        const myInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/user/get?access_token=${token}${nextOpenId ? `&next_openid=${nextOpenId}` : ''}`, undefined, myInit);
+        return result;
+    }
+    async getUserTags(openid) {
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ openid }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/getidlist?access_token=${token}`, undefined, myInit);
+        return result;
+    }
+    async getSubscribedUserInfo(openid) {
+        const myInit = {
+            methods: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/user/info?access_token=${token}&openid=${openid}&lang=zh_CN`, undefined, myInit);
+        return result;
     }
     async getCurrentMenu() {
         const myInit = {

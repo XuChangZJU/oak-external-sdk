@@ -15,7 +15,6 @@
     ],
     "scripts": {
         "test": "ts-node test/test.ts",
-        "testqiniu": "ts-node test/testqiniu.ts",
         "build": "tsc -p tsconfig.json && tsc -p tsconfig.es.json"
     },
     "license": "ISC",
