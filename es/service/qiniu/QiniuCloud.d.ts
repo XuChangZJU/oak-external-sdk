@@ -10,7 +10,7 @@ export declare class QiniuCloudInstance {
      * @param key
      * @returns
      */
-    getUploadInfo(uploadHost: string, bucket: string, key?: string): {
+    getKodoUploadInfo(uploadHost: string, bucket: string, key?: string): {
         key: string | undefined;
         uploadToken: string;
         uploadHost: string;
@@ -37,6 +37,25 @@ export declare class QiniuCloudInstance {
         expireAt: number;
     }>;
     /**
+     * https://developer.qiniu.com/kodo/1308/stat
+     * 文档里写的是GET方法，从nodejs-sdk里看是POST方法
+     */
+    getKodoFileStat(bucket: string, key: string, mockData?: any): Promise<{
+        fsize: number;
+        hash: string;
+        mimeType: string;
+        type: 0 | 1 | 2 | 3;
+        putTime: number;
+    }>;
+    /**
+     * https://developer.qiniu.com/kodo/1257/delete
+     * @param bucket
+     * @param key
+     * @param mockData
+     * @returns
+     */
+    removeKodoFile(bucket: string, key: string, mockData?: any): Promise<boolean>;
+    /**
      * 计算直播流地址相关信息
      * @param publishDomain
      * @param playDomain
@@ -57,7 +76,24 @@ export declare class QiniuCloudInstance {
         expireAt: number;
     };
     getPlayBackUrl(hub: string, playBackDomain: string, streamTitle: string, start: number, end: number, method: 'GET' | 'POST' | 'PUT' | 'DELETE', host: string, rawQuery?: string): Promise<string>;
-    private getToken;
+    /**
+     * 管理端访问七牛云服务器
+     * @param path
+     * @param method
+     * @param headers
+     * @param body
+     */
+    private access;
+    /**
+     * https://developer.qiniu.com/kodo/1208/upload-token
+     * @param scope
+     * @returns
+     */
+    private generateKodoUploadToken;
+    /**
+     * https://developer.qiniu.com/kodo/1201/access-token
+     */
+    private genernateKodoAccessToken;
     private base64ToUrlSafe;
     private hmacSha1;
     private urlSafeBase64Encode;

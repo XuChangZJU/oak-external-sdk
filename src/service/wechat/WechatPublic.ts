@@ -130,7 +130,6 @@ export class WechatPublicInstance {
                         return this.refreshAccessToken(url, init);
                     }
                     throw new OakExternalException('wechatPublic', json.errcode, json.errmsg);
-
                 }
                 return json;
             }
