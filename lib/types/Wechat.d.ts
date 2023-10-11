@@ -17,7 +17,6 @@ export type WechatPublicEventData = {
     MsgID: string;
     Status: string;
 };
-
 export declare type WechatMpEventData = {
     ToUserName: string;
     FromUserName: string;

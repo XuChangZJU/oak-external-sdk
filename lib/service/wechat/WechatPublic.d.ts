@@ -64,6 +64,12 @@ export declare class WechatPublicInstance {
     deleteTag(tag: {
         id: number;
     }): Promise<any>;
+    getTagUsers(tagid: number): Promise<any>;
+    batchtagging(openid_list: string[], tagid: number): Promise<any>;
+    batchuntagging(openid_list: string[], tagid: number): Promise<any>;
+    getUsers(nextOpenId: string): Promise<any>;
+    getUserTags(openid: string): Promise<any>;
+    getSubscribedUserInfo(openid: string): Promise<any>;
     getCurrentMenu(): Promise<any>;
     getMenu(): Promise<any>;
     createMenu(menuConfig: any): Promise<any>;
