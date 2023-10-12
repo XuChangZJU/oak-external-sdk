@@ -148,6 +148,7 @@ export declare class WechatPublicInstance {
     isJson(data: string): boolean;
     decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
     private randomString;
+    getAllPrivateTemplate(): Promise<any>;
     signatureJsSDK(options: {
         url: string;
     }): Promise<{

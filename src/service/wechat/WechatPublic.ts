@@ -299,7 +299,7 @@ export class WechatPublicInstance {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({tagid, next_openid: ""})
+            body: JSON.stringify({ tagid, next_openid: "" })
         };
         const token = await this.getAccessToken();
         const result = await this.access(
@@ -316,7 +316,7 @@ export class WechatPublicInstance {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({openid_list, tagid})
+            body: JSON.stringify({ openid_list, tagid })
         };
         const token = await this.getAccessToken();
         const result = await this.access(
@@ -333,7 +333,7 @@ export class WechatPublicInstance {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({openid_list, tagid})
+            body: JSON.stringify({ openid_list, tagid })
         };
         const token = await this.getAccessToken();
         const result = await this.access(
@@ -366,7 +366,7 @@ export class WechatPublicInstance {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({openid}),
+            body: JSON.stringify({ openid }),
         };
         const token = await this.getAccessToken();
         const result = await this.access(
@@ -1027,7 +1027,21 @@ export class WechatPublicInstance {
         }
         return pwd;
     }
-
+    async getAllPrivateTemplate() {
+        const myInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`,
+            undefined,
+            myInit
+        );
+        return result;
+    }
     async signatureJsSDK(options: { url: string }) {
         const url = options.url;
 

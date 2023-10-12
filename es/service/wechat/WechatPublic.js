@@ -750,6 +750,17 @@ export class WechatPublicInstance {
         }
         return pwd;
     }
+    async getAllPrivateTemplate() {
+        const myInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`, undefined, myInit);
+        return result;
+    }
     async signatureJsSDK(options) {
         const url = options.url;
         const noncestr = this.randomString();
