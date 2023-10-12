@@ -33,7 +33,7 @@ export class WechatPublicInstance {
             await new Promise((resolve) => setTimeout(() => resolve(0), 500));
         }
     }
-    async access(url, mockData, init) {
+    async access(url, init, mockData) {
         if (process.env.NODE_ENV === 'development' && mockData) {
             return mockData;
         }
@@ -83,17 +83,7 @@ export class WechatPublicInstance {
         return response;
     }
     async code2Session(code) {
-        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`
-        // {
-        //     access_token: 'aaa',
-        //     openid: code,
-        //     unionid: code,
-        //     refresh_token: 'aaa',
-        //     is_snapshotuser: false,
-        //     expires_in: 30,
-        //     scope: 'userinfo',
-        // }
-        );
+        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`);
         const { access_token, openid, unionid, scope, refresh_token, is_snapshotuser, expires_in, } = typeof result === 'string' ? JSON.parse(result) : result; // 这里微信返回的数据有时候竟然是text/plain
         return {
             accessToken: access_token,
@@ -107,14 +97,7 @@ export class WechatPublicInstance {
         };
     }
     async refreshUserAccessToken(refreshToken) {
-        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=${this.appId}&grant_type=refresh_token&refresh_token=${refreshToken}`
-        // {
-        //     access_token: 'aaa',
-        //     refresh_token: 'aaa',
-        //     expires_in: 30,
-        //     scope: 'userinfo',
-        // }
-        );
+        const result = await this.access(`https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=${this.appId}&grant_type=refresh_token&refresh_token=${refreshToken}`);
         const { access_token, refresh_token, expires_in, scope } = result;
         return {
             accessToken: access_token,
@@ -124,14 +107,7 @@ export class WechatPublicInstance {
         };
     }
     async getUserInfo(accessToken, openId) {
-        const result = await this.access(`https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openId}&lang=zh_CN`
-        // {
-        //     nickname: '码农哥',
-        //     sex: 1,
-        //     headimgurl:
-        //         'https://www.ertongzy.com/uploads/allimg/161005/2021233Y7-0.jpg',
-        // }
-        );
+        const result = await this.access(`https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openId}&lang=zh_CN`);
         const { nickname, sex, headimgurl } = result;
         return {
             nickname: nickname,
@@ -148,7 +124,7 @@ export class WechatPublicInstance {
             body: JSON.stringify({ tag: params }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/create?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/create?access_token=${token}`, myInit);
         const { tag } = result;
         if (tag) {
             return Object.assign({ success: true }, result);
@@ -163,7 +139,7 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/get?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/get?access_token=${token}`, myInit);
         return result;
     }
     async editTag(tag) {
@@ -175,9 +151,8 @@ export class WechatPublicInstance {
             body: JSON.stringify({ tag }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/update?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/update?access_token=${token}`, myInit);
         return result;
-        ;
     }
     async deleteTag(tag) {
         const myInit = {
@@ -188,7 +163,7 @@ export class WechatPublicInstance {
             body: JSON.stringify({ tag }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/delete?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/delete?access_token=${token}`, myInit);
         return result;
     }
     async getTagUsers(tagid) {
@@ -197,10 +172,10 @@ export class WechatPublicInstance {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ tagid, next_openid: "" })
+            body: JSON.stringify({ tagid, next_openid: '' }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/user/tag/get?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/user/tag/get?access_token=${token}`, myInit);
         return result;
     }
     async batchtagging(openid_list, tagid) {
@@ -209,10 +184,10 @@ export class WechatPublicInstance {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ openid_list, tagid })
+            body: JSON.stringify({ openid_list, tagid }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/members/batchtagging?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/members/batchtagging?access_token=${token}`, myInit);
         return result;
     }
     async batchuntagging(openid_list, tagid) {
@@ -221,10 +196,10 @@ export class WechatPublicInstance {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ openid_list, tagid })
+            body: JSON.stringify({ openid_list, tagid }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/members/batchuntagging?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/members/batchuntagging?access_token=${token}`, myInit);
         return result;
     }
     async getUsers(nextOpenId) {
@@ -235,7 +210,7 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/user/get?access_token=${token}${nextOpenId ? `&next_openid=${nextOpenId}` : ''}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/user/get?access_token=${token}${nextOpenId ? `&next_openid=${nextOpenId}` : ''}`, myInit);
         return result;
     }
     async getUserTags(openid) {
@@ -247,7 +222,7 @@ export class WechatPublicInstance {
             body: JSON.stringify({ openid }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/getidlist?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/tags/getidlist?access_token=${token}`, myInit);
         return result;
     }
     async getSubscribedUserInfo(openid) {
@@ -258,7 +233,7 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/user/info?access_token=${token}&openid=${openid}&lang=zh_CN`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/user/info?access_token=${token}&openid=${openid}&lang=zh_CN`, myInit);
         return result;
     }
     async getCurrentMenu() {
@@ -269,7 +244,7 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/get_current_selfmenu_info?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/get_current_selfmenu_info?access_token=${token}`, myInit);
         return result;
     }
     async getMenu() {
@@ -280,7 +255,7 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/get?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/get?access_token=${token}`, myInit);
         return result;
     }
     async createMenu(menuConfig) {
@@ -292,7 +267,7 @@ export class WechatPublicInstance {
             body: JSON.stringify(menuConfig),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${token}`, myInit);
         return result;
     }
     async createConditionalMenu(menuConfig) {
@@ -304,7 +279,7 @@ export class WechatPublicInstance {
             body: JSON.stringify(menuConfig),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/addconditional?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/addconditional?access_token=${token}`, myInit);
         return result;
     }
     async deleteConditionalMenu(menuId) {
@@ -318,7 +293,7 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/delconditional?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/delconditional?access_token=${token}`, myInit);
         return result;
     }
     async deleteMenu() {
@@ -326,15 +301,13 @@ export class WechatPublicInstance {
             method: 'GET',
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=${token}`, myInit);
         return result;
     }
     async refreshAccessToken(url, init) {
         const result = this.externalRefreshFn
             ? await this.externalRefreshFn(this.appId)
-            : await this.access(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
-            //{ access_token: 'mockToken', expires_in: 600 }
-            );
+            : await this.access(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`);
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         // 生成下次刷新的定时器
@@ -390,12 +363,7 @@ export class WechatPublicInstance {
             };
         }
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${token}`, undefined, // {
-        //     ticket: `ticket${Date.now()}`,
-        //     url: `http://mock/q/${sceneId ? sceneId : sceneStr}`,
-        //     expireSeconds: expireSeconds,
-        // },
-        myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${token}`, myInit);
         return {
             ticket: result.ticket,
             url: result.url,
@@ -419,12 +387,7 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, undefined, // {
-        //     errcode: 0,
-        //     errmsg: 'ok',
-        //     msgid: Date.now(),
-        // },
-        myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, myInit);
         const { errcode } = result;
         if (errcode === 0) {
             return Object.assign({ success: true }, result);
@@ -503,11 +466,7 @@ export class WechatPublicInstance {
             }
         }
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${token}`, undefined, // {
-        //     errcode: 0,
-        //     errmsg: 'ok',
-        // },
-        myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${token}`, myInit);
         const { errcode } = result;
         if (errcode === 0) {
             return Object.assign({ success: true }, result);
@@ -528,7 +487,7 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/freepublish/batchget?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/freepublish/batchget?access_token=${token}`, myInit);
         return result;
     }
     async getArticle(options) {
@@ -543,7 +502,7 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/freepublish/getarticle?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/freepublish/getarticle?access_token=${token}`, myInit);
         return result;
     }
     // 创建永久素材
@@ -580,7 +539,7 @@ export class WechatPublicInstance {
             body: formData,
         });
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=${type}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=${type}`, myInit);
         return result;
     }
     //创建图文消息内的图片获取URL
@@ -614,7 +573,7 @@ export class WechatPublicInstance {
             body: formData,
         });
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${token}`, myInit);
         return result;
     }
     //创建临时素材
@@ -648,7 +607,7 @@ export class WechatPublicInstance {
             body: formData,
         });
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`, myInit);
         return result;
     }
     // 获取素材列表
@@ -666,7 +625,7 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`, myInit);
         return result;
     }
     // 获取永久素材
@@ -682,7 +641,7 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/get_material?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/get_material?access_token=${token}`, myInit);
         return result;
     }
     // 获取临时素材
@@ -698,7 +657,7 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}`, myInit);
         return result;
     }
     async getTicket() {
@@ -709,11 +668,7 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${token}&type=jsapi`, undefined, // {
-        //     ticket: `ticket${Date.now()}`,
-        //     expires_in: 30,
-        // },
-        myInit));
+        const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${token}&type=jsapi`, myInit));
         const { ticket } = result;
         return ticket;
     }
@@ -758,7 +713,7 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`, undefined, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`, myInit);
         return result;
     }
     async signatureJsSDK(options) {

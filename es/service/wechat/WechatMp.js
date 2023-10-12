@@ -117,7 +117,6 @@ export class WechatMpInstance {
                 Accept: 'image/jpg',
             },
             body: JSON.stringify({
-                // access_token: this.accessToken,
                 scene,
                 page,
                 env_version: envVersion,

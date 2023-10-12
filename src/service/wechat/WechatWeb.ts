@@ -16,19 +16,23 @@ export class WechatWebInstance {
     refreshAccessTokenHandler?: any;
     private externalRefreshFn?: (appId: string) => Promise<string>;
 
-    constructor(appId: string, appSecret?: string, accessToken?: string, externalRefreshFn?: (appId: string) => Promise<string>) {
+    constructor(
+        appId: string,
+        appSecret?: string,
+        accessToken?: string,
+        externalRefreshFn?: (appId: string) => Promise<string>
+    ) {
         this.appId = appId;
         this.appSecret = appSecret;
 
         this.externalRefreshFn = externalRefreshFn;
-        if(!appSecret && !externalRefreshFn) {
+        if (!appSecret && !externalRefreshFn) {
             assert(false, 'appSecret和externalRefreshFn必须至少支持一个');
         }
-        
+
         if (accessToken) {
             this.accessToken = accessToken;
-        }
-        else {
+        } else {
             this.refreshAccessToken();
         }
     }
@@ -43,7 +47,11 @@ export class WechatWebInstance {
         }
     }
 
-    private async access(url: string, mockData: any, init?: RequestInit): Promise<any> {
+    private async access(
+        url: string,
+        init?: RequestInit,
+        mockData?: any
+    ): Promise<any> {
         if (process.env.NODE_ENV === 'development' && mockData) {
             return mockData;
         }
@@ -51,9 +59,7 @@ export class WechatWebInstance {
         try {
             response = await global.fetch(url, init);
         } catch (err) {
-            throw new OakNetworkException(
-                `访问wechat接口失败，「${url}」`
-            );
+            throw new OakNetworkException(`访问wechat接口失败，「${url}」`);
         }
 
         const { headers, status } = response;
@@ -96,6 +102,7 @@ export class WechatWebInstance {
     async code2Session(code: string) {
         const result = await this.access(
             `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${this.appId}&secret=${this.appSecret}&code=${code}&grant_type=authorization_code`,
+            undefined,
             { session_key: 'aaa', openid: code, unionid: code }
         );
         const { session_key, openid, unionid } =
@@ -109,10 +116,13 @@ export class WechatWebInstance {
     }
 
     private async refreshAccessToken(url?: string, init?: RequestInit) {
-        const result = this.externalRefreshFn ? await this.externalRefreshFn(this.appId) : await this.access(
-            `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`,
-            { access_token: 'mockToken', expires_in: 600 }
-        );
+        const result = this.externalRefreshFn
+            ? await this.externalRefreshFn(this.appId)
+            : await this.access(
+                  `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`,
+                  undefined,
+                  { access_token: 'mockToken', expires_in: 600 }
+              );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         // 生成下次刷新的定时器
