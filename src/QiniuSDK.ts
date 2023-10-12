@@ -1,4 +1,5 @@
 import { QiniuCloudInstance } from './service/qiniu/QiniuCloud';
+import { QiniuZone } from './types/Qiniu';
 
 class QiniuSDK {
     qiniuMap: Record<string, QiniuCloudInstance>;
@@ -9,7 +10,7 @@ class QiniuSDK {
 
     getInstance(
         accessKey: string,
-        accessSecret: string
+        accessSecret: string,
     ) {
         if (this.qiniuMap[accessKey]) {
             return this.qiniuMap[accessKey];

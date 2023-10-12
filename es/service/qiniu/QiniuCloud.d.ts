@@ -1,3 +1,4 @@
+import { QiniuZone } from '../../types/Qiniu';
 export declare class QiniuCloudInstance {
     private accessKey;
     private secretKey;
@@ -10,7 +11,7 @@ export declare class QiniuCloudInstance {
      * @param key
      * @returns
      */
-    getKodoUploadInfo(uploadHost: string, bucket: string, key?: string): {
+    getKodoUploadInfo(bucket: string, zone: QiniuZone, key?: string): {
         key: string | undefined;
         uploadToken: string;
         uploadHost: string;
@@ -40,7 +41,7 @@ export declare class QiniuCloudInstance {
      * https://developer.qiniu.com/kodo/1308/stat
      * 文档里写的是GET方法，从nodejs-sdk里看是POST方法
      */
-    getKodoFileStat(bucket: string, key: string, mockData?: any): Promise<{
+    getKodoFileStat(bucket: string, zone: QiniuZone, key: string, mockData?: any): Promise<{
         fsize: number;
         hash: string;
         mimeType: string;
@@ -54,7 +55,32 @@ export declare class QiniuCloudInstance {
      * @param mockData
      * @returns
      */
-    removeKodoFile(bucket: string, key: string, mockData?: any): Promise<boolean>;
+    removeKodoFile(bucket: string, zone: QiniuZone, key: string, mockData?: any): Promise<boolean>;
+    /**
+     * 列举kodo资源列表
+     * https://developer.qiniu.com/kodo/1284/list
+     * @param bucket
+     * @param marker
+     * @param limit
+     * @param prefix
+     * @param delimiter
+     * @param mockData
+     * @returns
+     */
+    getKodoFileList(bucket: string, zone: QiniuZone, marker?: string, limit?: number, prefix?: string, delimiter?: string, mockData?: any): Promise<{
+        marker?: string | undefined;
+        items: Array<{
+            key: string;
+            hash: string;
+            fsize: number;
+            mimeType: string;
+            putTime: number;
+            type: number;
+            status: number;
+        }>;
+    }>;
+    moveKodoFile(srcBucket: string, zone: QiniuZone, srcKey: string, destBucket: string, destKey: string, force?: boolean, mockData?: any): Promise<void>;
+    copyKodoFile(srcBucket: string, zone: QiniuZone, srcKey: string, destBucket: string, destKey: string, force?: boolean, mockData?: any): Promise<void>;
     /**
      * 计算直播流地址相关信息
      * @param publishDomain
