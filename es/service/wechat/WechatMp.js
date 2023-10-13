@@ -45,7 +45,7 @@ export class WechatMpInstance {
             throw new OakServerProxyException(`访问wechatMp接口失败，「${url}」,「${status}」`);
         }
         const contentType = headers['Content-Type'] || headers.get('Content-Type');
-        if (contentType.includes('application/json')) {
+        if (contentType?.includes('application/json')) {
             const json = await response.json();
             if (typeof json.errcode === 'number' && json.errcode !== 0) {
                 if ([42001, 40001].includes(json.errcode)) {
@@ -58,13 +58,28 @@ export class WechatMpInstance {
             }
             return json;
         }
-        if (contentType.includes('text') ||
-            contentType.includes('xml') ||
-            contentType.includes('html')) {
+        if (contentType?.includes('text') ||
+            contentType?.includes('xml') ||
+            contentType?.includes('html')) {
             const data = await response.text();
+            // 某些接口返回contentType为text/plain, 里面text是json结构
+            const isJson = this.isJson(data);
+            if (isJson) {
+                const json = JSON.parse(data);
+                if (typeof json.errcode === 'number' && json.errcode !== 0) {
+                    if ([40001, 42001].includes(json.errcode)) {
+                        if (fresh) {
+                            throw new OakServerProxyException('刚刷新的token不可能马上过期，请检查是否有并发刷新token的逻辑');
+                        }
+                        return this.refreshAccessToken(url, init);
+                    }
+                    throw new OakExternalException('wechatMp', json.errcode, json.errmsg);
+                }
+                return json;
+            }
             return data;
         }
-        if (contentType.includes('application/octet-stream')) {
+        if (contentType?.includes('application/octet-stream')) {
             return await response.arrayBuffer();
         }
         return response;
@@ -271,5 +286,14 @@ export class WechatMpInstance {
             return Object.assign({ success: true }, result);
         }
         return Object.assign({ success: false }, result);
+    }
+    isJson(data) {
+        try {
+            JSON.parse(data);
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
     }
 }

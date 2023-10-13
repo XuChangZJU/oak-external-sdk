@@ -104,7 +104,7 @@ export class WechatMpInstance {
         }
         const contentType =
             (headers as any)['Content-Type'] || headers.get('Content-Type')!;
-        if (contentType.includes('application/json')) {
+        if (contentType?.includes('application/json')) {
             const json = await response.json();
             if (typeof json.errcode === 'number' && json.errcode !== 0) {
                 if ([42001, 40001].includes(json.errcode)) {
@@ -124,14 +124,36 @@ export class WechatMpInstance {
             return json;
         }
         if (
-            contentType.includes('text') ||
-            contentType.includes('xml') ||
-            contentType.includes('html')
+            contentType?.includes('text') ||
+            contentType?.includes('xml') ||
+            contentType?.includes('html')
         ) {
             const data = await response.text();
+            // 某些接口返回contentType为text/plain, 里面text是json结构
+            const isJson = this.isJson(data);
+            if (isJson) {
+                const json = JSON.parse(data);
+                if (typeof json.errcode === 'number' && json.errcode !== 0) {
+                    if ([40001, 42001].includes(json.errcode)) {
+                         if (fresh) {
+                             throw new OakServerProxyException(
+                                 '刚刷新的token不可能马上过期，请检查是否有并发刷新token的逻辑'
+                             );
+                         }
+                        return this.refreshAccessToken(url, init);
+                    }
+                    throw new OakExternalException(
+                        'wechatMp',
+                        json.errcode,
+                        json.errmsg
+                    );
+                }
+                return json;
+            }
+
             return data;
         }
-        if (contentType.includes('application/octet-stream')) {
+        if (contentType?.includes('application/octet-stream')) {
             return await response.arrayBuffer();
         }
 
@@ -156,8 +178,8 @@ export class WechatMpInstance {
         const result = this.externalRefreshFn
             ? await this.externalRefreshFn(this.appId)
             : await this.access(
-                `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
-            );
+                  `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
+              );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         if (process.env.NODE_ENV === 'development') {
@@ -310,8 +332,6 @@ export class WechatMpInstance {
         );
     }
 
-
-
     //创建临时素材
     async createTemporaryMaterial(options: {
         type: MediaType;
@@ -350,7 +370,7 @@ export class WechatMpInstance {
         const token = await this.getAccessToken();
         const result = await this.access(
             `https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`,
-            myInit,
+            myInit
         );
         return result;
     }
@@ -431,5 +451,14 @@ export class WechatMpInstance {
             return Object.assign({ success: true }, result);
         }
         return Object.assign({ success: false }, result);
+    }
+
+    private isJson(data: string) {
+        try {
+            JSON.parse(data);
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 }

@@ -114,7 +114,8 @@ export class WechatPublicInstance {
         }
         const contentType =
             (headers as any)['Content-Type'] || headers.get('Content-Type')!;
-        if (contentType.includes('application/json')) {
+        // 微信 get_material api contentType是没有的
+        if (contentType?.includes('application/json')) {
             const json = await response.json();
             if (typeof json.errcode === 'number' && json.errcode !== 0) {
                 if ([40001, 42001].includes(json.errcode)) {
@@ -129,9 +130,9 @@ export class WechatPublicInstance {
             return json;
         }
         if (
-            contentType.includes('text') ||
-            contentType.includes('xml') ||
-            contentType.includes('html')
+            contentType?.includes('text') ||
+            contentType?.includes('xml') ||
+            contentType?.includes('html')
         ) {
             const data = await response.text();
             // 某些接口返回contentType为text/plain, 里面text是json结构
@@ -153,7 +154,7 @@ export class WechatPublicInstance {
 
             return data;
         }
-        if (contentType.includes('application/octet-stream')) {
+        if (contentType?.includes('application/octet-stream')) {
             return await response.arrayBuffer();
         }
 
@@ -545,6 +546,7 @@ export class WechatPublicInstance {
             expireSeconds: result.expire_seconds,
         };
     }
+    
     async sendTemplateMessage(options: {
         openId: string;
         templateId: string;
@@ -583,6 +585,7 @@ export class WechatPublicInstance {
         }
         return Object.assign({ success: false }, result);
     }
+
     async sendServeMessage(options: ServeMessageOption) {
         const { openId, type } = options;
         const myInit = {
@@ -665,6 +668,7 @@ export class WechatPublicInstance {
         }
         return Object.assign({ success: false }, result);
     }
+
     async batchGetArticle(options: {
         offset?: number;
         count: number;
@@ -888,7 +892,11 @@ export class WechatPublicInstance {
             `https://api.weixin.qq.com/cgi-bin/material/get_material?access_token=${token}`,
             myInit
         );
-        return result;
+        if (this.isJson(result)) {
+            return result;
+        }
+        const arrayBuffer = await result.arrayBuffer();
+        return arrayBuffer;
     }
 
     // 获取临时素材
@@ -928,11 +936,25 @@ export class WechatPublicInstance {
         };
 
         const { ticket } = result;
-
         return ticket;
     }
 
-    isJson(data: string) {
+    async getAllPrivateTemplate() {
+        const myInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`,
+            myInit
+        );
+        return result;
+    }
+
+    private isJson(data: string) {
         try {
             JSON.parse(data);
             return true;
@@ -975,20 +997,7 @@ export class WechatPublicInstance {
         }
         return pwd;
     }
-    async getAllPrivateTemplate() {
-        const myInit = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        };
-        const token = await this.getAccessToken();
-        const result = await this.access(
-            `https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`,
-            myInit
-        );
-        return result;
-    }
+
     async signatureJsSDK(options: { url: string }) {
         const url = options.url;
 

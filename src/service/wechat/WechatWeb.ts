@@ -70,14 +70,14 @@ export class WechatWebInstance {
         }
         const contentType =
             (headers as any)['Content-Type'] || headers.get('Content-Type')!;
-        if (contentType.includes('application/json')) {
+        if (contentType?.includes('application/json')) {
             const json = await response.json();
             if (typeof json.errcode === 'number' && json.errcode !== 0) {
                 if ([40001, 42001].includes(json.errcode)) {
                     return this.refreshAccessToken();
                 }
                 throw new OakExternalException(
-                    'wechatPublic',
+                    'wechat',
                     json.errcode,
                     json.errmsg
                 );
@@ -85,14 +85,31 @@ export class WechatWebInstance {
             return json;
         }
         if (
-            contentType.includes('text') ||
-            contentType.includes('xml') ||
-            contentType.includes('html')
+            contentType?.includes('text') ||
+            contentType?.includes('xml') ||
+            contentType?.includes('html')
         ) {
             const data = await response.text();
+            // 某些接口返回contentType为text/plain, 里面text是json结构
+            const isJson = this.isJson(data);
+            if (isJson) {
+                const json = JSON.parse(data);
+                if (typeof json.errcode === 'number' && json.errcode !== 0) {
+                    if ([40001, 42001].includes(json.errcode)) {
+                        return this.refreshAccessToken(url, init);
+                    }
+                    throw new OakExternalException(
+                        'wechat',
+                        json.errcode,
+                        json.errmsg
+                    );
+                }
+                return json;
+            }
+
             return data;
         }
-        if (contentType.includes('application/octet-stream')) {
+        if (contentType?.includes('application/octet-stream')) {
             return await response.arrayBuffer();
         }
 
@@ -131,6 +148,15 @@ export class WechatWebInstance {
         }, (expires_in - 10) * 1000);
         if (url) {
             return this.access(url, init);
+        }
+    }
+
+    private isJson(data: string) {
+        try {
+            JSON.parse(data);
+            return true;
+        } catch (e) {
+            return false;
         }
     }
 

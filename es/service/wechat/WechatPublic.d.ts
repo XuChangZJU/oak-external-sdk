@@ -145,10 +145,10 @@ export declare class WechatPublicInstance {
         mediaId: string;
     }): Promise<any>;
     getTicket(): Promise<string>;
-    isJson(data: string): boolean;
+    getAllPrivateTemplate(): Promise<any>;
+    private isJson;
     decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
     private randomString;
-    getAllPrivateTemplate(): Promise<any>;
     signatureJsSDK(options: {
         url: string;
     }): Promise<{

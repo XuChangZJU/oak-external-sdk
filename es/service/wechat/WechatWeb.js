@@ -47,23 +47,35 @@ export class WechatWebInstance {
             throw new OakServerProxyException(`访问wechat接口失败，「${url}」,「${status}」`);
         }
         const contentType = headers['Content-Type'] || headers.get('Content-Type');
-        if (contentType.includes('application/json')) {
+        if (contentType?.includes('application/json')) {
             const json = await response.json();
             if (typeof json.errcode === 'number' && json.errcode !== 0) {
                 if ([40001, 42001].includes(json.errcode)) {
                     return this.refreshAccessToken();
                 }
-                throw new OakExternalException('wechatPublic', json.errcode, json.errmsg);
+                throw new OakExternalException('wechat', json.errcode, json.errmsg);
             }
             return json;
         }
-        if (contentType.includes('text') ||
-            contentType.includes('xml') ||
-            contentType.includes('html')) {
+        if (contentType?.includes('text') ||
+            contentType?.includes('xml') ||
+            contentType?.includes('html')) {
             const data = await response.text();
+            // 某些接口返回contentType为text/plain, 里面text是json结构
+            const isJson = this.isJson(data);
+            if (isJson) {
+                const json = JSON.parse(data);
+                if (typeof json.errcode === 'number' && json.errcode !== 0) {
+                    if ([40001, 42001].includes(json.errcode)) {
+                        return this.refreshAccessToken(url, init);
+                    }
+                    throw new OakExternalException('wechat', json.errcode, json.errmsg);
+                }
+                return json;
+            }
             return data;
         }
-        if (contentType.includes('application/octet-stream')) {
+        if (contentType?.includes('application/octet-stream')) {
             return await response.arrayBuffer();
         }
         return response;
@@ -89,6 +101,15 @@ export class WechatWebInstance {
         }, (expires_in - 10) * 1000);
         if (url) {
             return this.access(url, init);
+        }
+    }
+    isJson(data) {
+        try {
+            JSON.parse(data);
+            return true;
+        }
+        catch (e) {
+            return false;
         }
     }
     decryptData(sessionKey, encryptedData, iv, signature) {

@@ -87,5 +87,6 @@ export declare class WechatMpInstance {
         filetype: string;
     }): Promise<any>;
     sendServeMessage(options: ServeMessageOption): Promise<any>;
+    private isJson;
 }
 export {};

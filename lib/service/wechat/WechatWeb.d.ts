@@ -13,5 +13,6 @@ export declare class WechatWebInstance {
         unionId: string;
     }>;
     private refreshAccessToken;
+    private isJson;
     decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
 }
