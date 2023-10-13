@@ -86,6 +86,9 @@ export declare class WechatMpInstance {
         filename: string;
         filetype: string;
     }): Promise<any>;
+    getTemporaryMaterial(options: {
+        mediaId: string;
+    }): Promise<any>;
     sendServeMessage(options: ServeMessageOption): Promise<any>;
     private isJson;
 }

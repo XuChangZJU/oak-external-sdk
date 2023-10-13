@@ -663,7 +663,11 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}`, myInit);
-        return result;
+        if (this.isJson(result)) {
+            return result;
+        }
+        const arrayBuffer = await result.arrayBuffer();
+        return arrayBuffer;
     }
     async getTicket() {
         const myInit = {

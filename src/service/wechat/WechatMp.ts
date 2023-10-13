@@ -135,11 +135,11 @@ export class WechatMpInstance {
                 const json = JSON.parse(data);
                 if (typeof json.errcode === 'number' && json.errcode !== 0) {
                     if ([40001, 42001].includes(json.errcode)) {
-                         if (fresh) {
-                             throw new OakServerProxyException(
-                                 '刚刷新的token不可能马上过期，请检查是否有并发刷新token的逻辑'
-                             );
-                         }
+                        if (fresh) {
+                            throw new OakServerProxyException(
+                                '刚刷新的token不可能马上过期，请检查是否有并发刷新token的逻辑'
+                            );
+                        }
                         return this.refreshAccessToken(url, init);
                     }
                     throw new OakExternalException(
@@ -373,6 +373,30 @@ export class WechatMpInstance {
             myInit
         );
         return result;
+    }
+
+    // 获取临时素材
+    async getTemporaryMaterial(options: { mediaId: string }) {
+        const { mediaId } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                media_id: mediaId,
+            }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}`,
+            myInit
+        );
+        if (this.isJson(result)) {
+            return result;
+        }
+        const arrayBuffer = await result.arrayBuffer();
+        return arrayBuffer;
     }
 
     async sendServeMessage(options: ServeMessageOption) {

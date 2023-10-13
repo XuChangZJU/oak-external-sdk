@@ -546,7 +546,7 @@ export class WechatPublicInstance {
             expireSeconds: result.expire_seconds,
         };
     }
-    
+
     async sendTemplateMessage(options: {
         openId: string;
         templateId: string;
@@ -916,7 +916,11 @@ export class WechatPublicInstance {
             `https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}`,
             myInit
         );
-        return result;
+        if (this.isJson(result)) {
+            return result;
+        }
+        const arrayBuffer = await result.arrayBuffer();
+        return arrayBuffer;
     }
 
     async getTicket() {
