@@ -37,7 +37,7 @@ const QINIU_ENDPOINT_LIST = {
         sdl: 'iovip-z1.qiniuio.com',
         om: 'rs-z1.qiniuapi.com',
         ol: 'rsf-z1.qiniuapi.com',
-        sq: 'api.qiniuapi.com',        
+        sq: 'api.qiniuapi.com',
     },
     'z2': {
         bm: 'uc.qiniuapi.com',
@@ -72,7 +72,7 @@ function getQueryString(query: UrlObject['query']) {
     if (typeof query === 'string') {
         return query;
     }
-    return stringify(query!);    
+    return stringify(query!);
 }
 /**
  * from qiniu sdk
@@ -136,11 +136,11 @@ export class QiniuCloudInstance {
     ) {
         try {
             const scope = key ? `${bucket}:${key}` : bucket;
-            const uploadToken = this.generateKodoUploadToken(scope);            
+            const uploadToken = this.generateKodoUploadToken(scope);
             return {
                 key,
                 uploadToken,
-                uploadHost: QINIU_ENDPOINT_LIST[zone].ul,
+                uploadHost: `https://${QINIU_ENDPOINT_LIST[zone].ul}`,
                 bucket,
             };
         } catch (err) {

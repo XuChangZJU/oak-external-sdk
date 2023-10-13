@@ -125,7 +125,7 @@ export class QiniuCloudInstance {
             return {
                 key,
                 uploadToken,
-                uploadHost: QINIU_ENDPOINT_LIST[zone].ul,
+                uploadHost: `https://${QINIU_ENDPOINT_LIST[zone].ul}`,
                 bucket,
             };
         }
