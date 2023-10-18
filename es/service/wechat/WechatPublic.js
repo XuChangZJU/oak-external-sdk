@@ -669,6 +669,34 @@ export class WechatPublicInstance {
         const arrayBuffer = await result.arrayBuffer();
         return arrayBuffer;
     }
+    // 获取素材总数
+    async getMaterialCount() {
+        const myInit = {
+            methods: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/material/get_materialcount?access_token=${token}`, myInit));
+        return result;
+    }
+    // 删除永久素材
+    async deleteMaterial(options) {
+        const { mediaId } = options;
+        const myInit = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                media_id: mediaId,
+            }),
+        };
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/del_material?access_token=${token}`, myInit);
+        return result;
+    }
     async getTicket() {
         const myInit = {
             method: 'GET',

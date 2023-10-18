@@ -144,6 +144,15 @@ export declare class WechatPublicInstance {
     getTemporaryMaterial(options: {
         mediaId: string;
     }): Promise<any>;
+    getMaterialCount(): Promise<{
+        voice_count: number;
+        video_count: number;
+        image_count: number;
+        news_count: number;
+    }>;
+    deleteMaterial(options: {
+        mediaId: string;
+    }): Promise<any>;
     getTicket(): Promise<string>;
     getAllPrivateTemplate(): Promise<any>;
     private isJson;
