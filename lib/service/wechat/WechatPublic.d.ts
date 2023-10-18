@@ -121,7 +121,10 @@ export declare class WechatPublicInstance {
             title: string;
             introduction: string;
         };
-    }): Promise<any>;
+    }): Promise<{
+        media_id: string;
+        url: string;
+    }>;
     createImgInNewsMaterial(options: {
         media: any;
         filename: string;
@@ -132,12 +135,37 @@ export declare class WechatPublicInstance {
         media: any;
         filename: string;
         filetype: string;
-    }): Promise<any>;
+    }): Promise<{
+        type: string;
+        media_id: string;
+        created_at: number;
+    }>;
     batchGetMaterialList(options: {
         type: 'image' | 'video' | 'voice' | 'news';
         offset?: number;
         count: number;
-    }): Promise<any>;
+    }): Promise<{
+        total_count: number;
+        item_count: number;
+        item: {
+            media_id: string;
+            update_time: number;
+            name?: string;
+            url?: string;
+            content?: {
+                news_item: {
+                    title: string;
+                    thumb_media_id: string;
+                    show_cover_pic: string;
+                    author: string;
+                    digest: string;
+                    content: string;
+                    url: string;
+                    content_source_url: string;
+                }[];
+            };
+        }[];
+    }>;
     getMaterial(options: {
         mediaId: string;
     }): Promise<any>;
@@ -154,7 +182,16 @@ export declare class WechatPublicInstance {
         mediaId: string;
     }): Promise<any>;
     getTicket(): Promise<string>;
-    getAllPrivateTemplate(): Promise<any>;
+    getAllPrivateTemplate(): Promise<{
+        template_list: {
+            template_id: string;
+            title: string;
+            primary_industry: string;
+            deputy_industry: string;
+            content: string;
+            example: string;
+        }[];
+    }>;
     private isJson;
     decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
     private randomString;

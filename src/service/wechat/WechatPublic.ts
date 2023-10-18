@@ -756,10 +756,10 @@ export class WechatPublicInstance {
         });
 
         const token = await this.getAccessToken();
-        const result = await this.access(
+        const result = (await this.access(
             `https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=${type}`,
             myInit
-        );
+        )) as { media_id: string; url: string };
         return result;
     }
 
@@ -841,10 +841,10 @@ export class WechatPublicInstance {
             body: formData,
         });
         const token = await this.getAccessToken();
-        const result = await this.access(
+        const result = (await this.access(
             `https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`,
             myInit
-        );
+        )) as { type: string; media_id: string; created_at: number };
         return result;
     }
 
@@ -867,10 +867,31 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(
+        const result = (await this.access(
             `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`,
             myInit
-        );
+        )) as {
+            total_count: number;
+            item_count: number;
+            item: {
+                media_id: string;
+                update_time: number;
+                name?: string;
+                url?: string;
+                content?: {
+                    news_item: {
+                        title: string;
+                        thumb_media_id: string;
+                        show_cover_pic: string;
+                        author: string;
+                        digest: string;
+                        content: string;
+                        url: string;
+                        content_source_url: string;
+                    }[];
+                };
+            }[];
+        };
         return result;
     }
 
@@ -994,10 +1015,19 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = await this.access(
+        const result = (await this.access(
             `https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`,
             myInit
-        );
+        )) as {
+            template_list: {
+                template_id: string;
+                title: string;
+                primary_industry: string;
+                deputy_industry: string;
+                content: string;
+                example: string;
+            }[];
+        };
         return result;
     }
 

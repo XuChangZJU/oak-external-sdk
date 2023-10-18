@@ -540,7 +540,7 @@ export class WechatPublicInstance {
             body: formData,
         });
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=${type}`, myInit);
+        const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=${type}`, myInit));
         return result;
     }
     //创建图文消息内的图片获取URL
@@ -608,7 +608,7 @@ export class WechatPublicInstance {
             body: formData,
         });
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`, myInit);
+        const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/media/upload?access_token=${token}&type=${type}`, myInit));
         return result;
     }
     // 获取素材列表
@@ -626,7 +626,7 @@ export class WechatPublicInstance {
             }),
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`, myInit);
+        const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`, myInit));
         return result;
     }
     // 获取永久素材
@@ -717,7 +717,7 @@ export class WechatPublicInstance {
             },
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`, myInit);
+        const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`, myInit));
         return result;
     }
     isJson(data) {
