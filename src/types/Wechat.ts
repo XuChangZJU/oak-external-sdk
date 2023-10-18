@@ -19,16 +19,16 @@ export type WechatPublicEventData = {
         | 'location'
         | 'link'
         | 'event'; // 消息类型; event接收事件推送
-    Event:
+    // 接收事件
+    Event?:
         | 'subscribe'
         | 'unsubscribe'
         | 'SCAN'
         | 'LOCATION'
         | 'CLICK'
         | 'VIEW'
-        | 'TEMPLATESENDJOBFINISH';
-    // 接收事件
-    EventKey: string; // 事件KEY值，subscribe: qrscene_为前缀，后面为二维码的参数值; SCAN: 一个32位无符号整数，即创建二维码时的二维码scene_id; CLICK: 自定义菜单接口中KEY值对应; VIEW: 设置的跳转URL;
+        | 'TEMPLATESENDJOBFINISH'; // MsgType是event
+    EventKey?: string; // 事件KEY值，subscribe: qrscene_为前缀，后面为二维码的参数值; SCAN: 一个32位无符号整数，即创建二维码时的二维码scene_id; CLICK: 自定义菜单接口中KEY值对应; VIEW: 设置的跳转URL;
     Ticket?: string; // subscribe 二维码的ticket，可用来换取二维码图片
     Latitude?: string; // LOCATION 地理位置纬度
     Longitude?: string; // LOCATION 地理位置经度

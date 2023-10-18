@@ -12,8 +12,8 @@ export type WechatPublicEventData = {
     CreateTime: number;
     MsgID: string;
     MsgType: 'text' | 'image' | 'voice' | 'video' | 'location' | 'link' | 'event';
-    Event: 'subscribe' | 'unsubscribe' | 'SCAN' | 'LOCATION' | 'CLICK' | 'VIEW' | 'TEMPLATESENDJOBFINISH';
-    EventKey: string;
+    Event?: 'subscribe' | 'unsubscribe' | 'SCAN' | 'LOCATION' | 'CLICK' | 'VIEW' | 'TEMPLATESENDJOBFINISH';
+    EventKey?: string;
     Ticket?: string;
     Latitude?: string;
     Longitude?: string;
