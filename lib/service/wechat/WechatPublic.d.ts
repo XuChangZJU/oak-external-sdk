@@ -117,6 +117,7 @@ export declare class WechatPublicInstance {
         media: any;
         filename: string;
         filetype: string;
+        fileLength: number;
         description?: {
             title: string;
             introduction: string;
@@ -129,12 +130,14 @@ export declare class WechatPublicInstance {
         media: any;
         filename: string;
         filetype: string;
+        fileLength: number;
     }): Promise<any>;
     createTemporaryMaterial(options: {
         type: MediaType;
         media: any;
         filename: string;
         filetype: string;
+        fileLength: number;
     }): Promise<{
         type: string;
         media_id: string;

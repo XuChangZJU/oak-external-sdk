@@ -508,30 +508,17 @@ export class WechatPublicInstance {
     }
     // 创建永久素材
     async createMaterial(options) {
-        const { type, media, description, filetype, filename } = options;
+        const { type, media, description, filetype, filename, fileLength } = options;
         const formData = new FormData();
         formData.append('media', media, {
             contentType: filetype,
-            filename: filename, // 微信识别需要
+            filename: filename,
+            knownLength: fileLength,
         });
         if (type === 'video') {
             formData.append('description', JSON.stringify(description));
         }
-        const getLength = () => {
-            return new Promise((resolve, reject) => {
-                formData.getLength((err, length) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        resolve(length);
-                    }
-                });
-            });
-        };
-        const contentLength = await getLength();
         const headers = formData.getHeaders();
-        headers['Content-Length'] = contentLength;
         const myInit = {
             method: 'POST',
             headers,
@@ -545,27 +532,14 @@ export class WechatPublicInstance {
     }
     //创建图文消息内的图片获取URL
     async createImgInNewsMaterial(options) {
-        const { media, filetype, filename } = options;
+        const { media, filetype, filename, fileLength } = options;
         const formData = new FormData();
         formData.append('media', media, {
             contentType: filetype,
-            filename: filename, // 微信识别需要
+            filename: filename,
+            knownLength: fileLength,
         });
-        const getLength = () => {
-            return new Promise((resolve, reject) => {
-                formData.getLength((err, length) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        resolve(length);
-                    }
-                });
-            });
-        };
-        const contentLength = await getLength();
         const headers = formData.getHeaders();
-        headers['Content-Length'] = contentLength;
         const myInit = {
             method: 'POST',
             headers,
@@ -579,27 +553,14 @@ export class WechatPublicInstance {
     }
     //创建临时素材
     async createTemporaryMaterial(options) {
-        const { type, media, filetype, filename } = options;
+        const { type, media, filetype, filename, fileLength } = options;
         const formData = new FormData();
         formData.append('media', media, {
             contentType: filetype,
-            filename: filename, // 微信识别需要
+            filename: filename,
+            knownLength: fileLength,
         });
-        const getLength = () => {
-            return new Promise((resolve, reject) => {
-                formData.getLength((err, length) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        resolve(length);
-                    }
-                });
-            });
-        };
-        const contentLength = await getLength();
         const headers = formData.getHeaders();
-        headers['Content-Length'] = contentLength;
         const myInit = {
             method: 'POST',
             headers,
