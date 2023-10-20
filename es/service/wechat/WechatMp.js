@@ -217,16 +217,10 @@ export class WechatMpInstance {
     async getTemporaryMaterial(options) {
         const { mediaId } = options;
         const myInit = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                media_id: mediaId,
-            }),
+            method: 'GET',
         };
         const token = await this.getAccessToken();
-        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}`, myInit);
+        const result = await this.access(`https://api.weixin.qq.com/cgi-bin/media/get?access_token=${token}&media_id=${mediaId}`, myInit);
         if (this.isJson(result)) {
             return result;
         }
