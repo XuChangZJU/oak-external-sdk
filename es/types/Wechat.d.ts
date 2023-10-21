@@ -42,6 +42,7 @@ export declare type WechatMpEventData = {
     MsgID: string;
     MsgType: 'text' | 'image' | 'miniprogrampage' | 'event';
     Content?: string;
+    MediaId?: string;
     PicUrl?: string;
     Title?: string;
     AppId?: string;

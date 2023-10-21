@@ -66,6 +66,7 @@ export declare type WechatMpEventData = {
     MsgType: 'text' | 'image' | 'miniprogrampage' | 'event'; // event 用户在小程序“客服会话按钮”进入客服会话
 
     Content?: string; // 文本消息内容
+    MediaId?: string; // 图片消息媒体id
     PicUrl?: string; //图片链接（由系统生成）
     Title?: string; // 标题
     AppId?: string; // 小程序appid
