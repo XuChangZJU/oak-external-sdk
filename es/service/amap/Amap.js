@@ -1,4 +1,4 @@
-require('../../fetch');
+require('../../utils/fetch');
 import { OakExternalException, OakNetworkException, } from 'oak-domain/lib/types/Exception';
 export class AmapInstance {
     key;

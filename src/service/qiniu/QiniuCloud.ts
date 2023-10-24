@@ -1,10 +1,13 @@
-require('../../fetch');
+require('../../utils/fetch');
 import crypto from 'crypto';
-import { UrlObject } from 'url';
+import URL, { UrlObject } from 'url';
 import { Md5 } from 'ts-md5';
 import { Buffer } from 'buffer';
 import { stringify } from 'querystring';
-import { OakExternalException, OakNetworkException } from 'oak-domain/lib/types/Exception';
+import {
+    OakExternalException,
+    OakNetworkException,
+} from 'oak-domain/lib/types/Exception';
 import { QiniuZone } from '../../types/Qiniu';
 
 /**
@@ -12,7 +15,7 @@ import { QiniuZone } from '../../types/Qiniu';
  * https://developer.qiniu.com/kodo/1671/region-endpoint-fq
  */
 const QINIU_ENDPOINT_LIST = {
-    'z0': {
+    z0: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload.qiniup.com',
         sul: 'up.qiniup.com',
@@ -30,7 +33,7 @@ const QINIU_ENDPOINT_LIST = {
         ol: 'rsf-cn-east-2.qiniuapi.com',
         sq: 'api.qiniuapi.com',
     },
-    'z1': {
+    z1: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload-z1.qiniup.com',
         sul: 'up-z1.qiniup.com',
@@ -39,7 +42,7 @@ const QINIU_ENDPOINT_LIST = {
         ol: 'rsf-z1.qiniuapi.com',
         sq: 'api.qiniuapi.com',
     },
-    'z2': {
+    z2: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload-z2.qiniup.com',
         sul: 'up-z2.qiniup.com',
@@ -48,7 +51,7 @@ const QINIU_ENDPOINT_LIST = {
         ol: 'rsf-z2.qiniuapi.com',
         sq: 'api.qiniuapi.com',
     },
-    'na0': {
+    na0: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload-na0.qiniup.com',
         sul: 'up-na0.qiniup.com',
@@ -57,7 +60,7 @@ const QINIU_ENDPOINT_LIST = {
         ol: 'rsf-na0.qiniuapi.com',
         sq: 'api.qiniuapi.com',
     },
-    'as0': {
+    as0: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload-as0.qiniup.com',
         sul: 'up-as0.qiniup.com',
@@ -65,8 +68,8 @@ const QINIU_ENDPOINT_LIST = {
         om: 'rs-as0.qiniuapi.com',
         ol: 'rsf-as0.qiniuapi.com',
         sq: 'api.qiniuapi.com',
-    }
-}
+    },
+};
 
 function getQueryString(query: UrlObject['query']) {
     if (typeof query === 'string') {
@@ -76,9 +79,9 @@ function getQueryString(query: UrlObject['query']) {
 }
 /**
  * from qiniu sdk
- * @param date 
- * @param layout 
- * @returns 
+ * @param date
+ * @param layout
+ * @returns
  */
 function formatUTC(date: Date, layout: string) {
     function pad(num: number, digit?: number) {
@@ -101,7 +104,8 @@ function formatUTC(date: Date, layout: string) {
 
     let result = layout || 'YYYY-MM-DDTHH:MM:ss.SSSZ';
 
-    result = result.replace(/YYYY/g, year.toString())
+    result = result
+        .replace(/YYYY/g, year.toString())
         .replace(/MM/g, pad(month))
         .replace(/DD/g, pad(day))
         .replace(/HH/g, pad(hour))
@@ -129,11 +133,7 @@ export class QiniuCloudInstance {
      * @param key
      * @returns
      */
-    getKodoUploadInfo(
-        bucket: string,
-        zone: QiniuZone,
-        key?: string
-    ) {
+    getKodoUploadInfo(bucket: string, zone: QiniuZone, key?: string) {
         try {
             const scope = key ? `${bucket}:${key}` : bucket;
             const uploadToken = this.generateKodoUploadToken(scope);
@@ -239,15 +239,28 @@ export class QiniuCloudInstance {
      * https://developer.qiniu.com/kodo/1308/stat
      * 文档里写的是GET方法，从nodejs-sdk里看是POST方法
      */
-    async getKodoFileStat(bucket: string, zone: QiniuZone, key: string, mockData?: any) {
+    async getKodoFileStat(
+        bucket: string,
+        zone: QiniuZone,
+        key: string,
+        mockData?: any
+    ) {
         const entry = `${bucket}:${key}`;
         const encodedEntryURI = this.urlSafeBase64Encode(entry);
 
         const path = `/stat/${encodedEntryURI}`;
 
-        const result = await this.access(QINIU_ENDPOINT_LIST[zone].om, path, {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }, undefined, 'POST', undefined, mockData);
+        const result = await this.access(
+            QINIU_ENDPOINT_LIST[zone].om,
+            path,
+            {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            undefined,
+            'POST',
+            undefined,
+            mockData
+        );
 
         return result as {
             fsize: number;
@@ -260,20 +273,33 @@ export class QiniuCloudInstance {
 
     /**
      * https://developer.qiniu.com/kodo/1257/delete
-     * @param bucket 
-     * @param key 
-     * @param mockData 
-     * @returns 
+     * @param bucket
+     * @param key
+     * @param mockData
+     * @returns
      */
-    async removeKodoFile(bucket: string, zone: QiniuZone, key: string, mockData?: any) {
+    async removeKodoFile(
+        bucket: string,
+        zone: QiniuZone,
+        key: string,
+        mockData?: any
+    ) {
         const entry = `${bucket}:${key}`;
         const encodedEntryURI = this.urlSafeBase64Encode(entry);
 
         const path = `/delete/${encodedEntryURI}`;
 
-        await this.access(QINIU_ENDPOINT_LIST[zone].om, path, {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }, undefined, 'POST', undefined, mockData);
+        await this.access(
+            QINIU_ENDPOINT_LIST[zone].om,
+            path,
+            {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            undefined,
+            'POST',
+            undefined,
+            mockData
+        );
 
         return true;
     }
@@ -281,21 +307,41 @@ export class QiniuCloudInstance {
     /**
      * 列举kodo资源列表
      * https://developer.qiniu.com/kodo/1284/list
-     * @param bucket 
-     * @param marker 
-     * @param limit 
-     * @param prefix 
-     * @param delimiter 
-     * @param mockData 
-     * @returns 
+     * @param bucket
+     * @param marker
+     * @param limit
+     * @param prefix
+     * @param delimiter
+     * @param mockData
+     * @returns
      */
-    async getKodoFileList(bucket: string, zone: QiniuZone, marker?: string, limit?: number, prefix?: string, delimiter?: string, mockData?: any) {
+    async getKodoFileList(
+        bucket: string,
+        zone: QiniuZone,
+        marker?: string,
+        limit?: number,
+        prefix?: string,
+        delimiter?: string,
+        mockData?: any
+    ) {
         const path = '/list';
-        const result = await this.access(QINIU_ENDPOINT_LIST[zone].ol, path, {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }, {
-            bucket, marker, limit, prefix, delimiter
-        }, 'POST', undefined, mockData);
+        const result = await this.access(
+            QINIU_ENDPOINT_LIST[zone].ol,
+            path,
+            {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            {
+                bucket,
+                marker,
+                limit,
+                prefix,
+                delimiter,
+            },
+            'POST',
+            undefined,
+            mockData
+        );
 
         return result as {
             marker?: string;
@@ -307,11 +353,19 @@ export class QiniuCloudInstance {
                 putTime: number;
                 type: number;
                 status: number;
-            }>
-        }
+            }>;
+        };
     }
 
-    async moveKodoFile(srcBucket: string, zone: QiniuZone, srcKey: string, destBucket: string, destKey: string, force?: boolean, mockData?: any) {
+    async moveKodoFile(
+        srcBucket: string,
+        zone: QiniuZone,
+        srcKey: string,
+        destBucket: string,
+        destKey: string,
+        force?: boolean,
+        mockData?: any
+    ) {
         const srcEntry = `${srcBucket}:${srcKey}`;
         const srcEncodedEntryURI = this.urlSafeBase64Encode(srcEntry);
         const destEntry = `${destBucket}:${destKey}`;
@@ -322,12 +376,28 @@ export class QiniuCloudInstance {
             path += '/force/true';
         }
 
-        await this.access(QINIU_ENDPOINT_LIST[zone].om, path, {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }, undefined, 'POST', undefined, mockData);
+        await this.access(
+            QINIU_ENDPOINT_LIST[zone].om,
+            path,
+            {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            undefined,
+            'POST',
+            undefined,
+            mockData
+        );
     }
 
-    async copyKodoFile(srcBucket: string, zone: QiniuZone, srcKey: string, destBucket: string, destKey: string, force?: boolean, mockData?: any) {
+    async copyKodoFile(
+        srcBucket: string,
+        zone: QiniuZone,
+        srcKey: string,
+        destBucket: string,
+        destKey: string,
+        force?: boolean,
+        mockData?: any
+    ) {
         const srcEntry = `${srcBucket}:${srcKey}`;
         const srcEncodedEntryURI = this.urlSafeBase64Encode(srcEntry);
         const destEntry = `${destBucket}:${destKey}`;
@@ -338,9 +408,17 @@ export class QiniuCloudInstance {
             path += '/force/true';
         }
 
-        await this.access(QINIU_ENDPOINT_LIST[zone].om, path, {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }, undefined, 'POST', undefined, mockData);
+        await this.access(
+            QINIU_ENDPOINT_LIST[zone].om,
+            path,
+            {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            undefined,
+            'POST',
+            undefined,
+            mockData
+        );
     }
 
     /**
@@ -429,10 +507,10 @@ export class QiniuCloudInstance {
 
     /**
      * 管理端访问七牛云服务器
-     * @param path 
-     * @param method 
-     * @param headers 
-     * @param body 
+     * @param path
+     * @param method
+     * @param headers
+     * @param body
      */
     private async access(
         host: string,
@@ -444,9 +522,14 @@ export class QiniuCloudInstance {
         mockData?: any
     ) {
         const query2 = query && getQueryString(query);
-        const url = new URL(`https://${host}${path}`);
+        const url = new URL.URL(`https://${host}${path}`);
         if (process.env.NODE_ENV === 'development' && mockData) {
-            console.warn(`mocking access qiniu api: url: ${url.toString()}, body: ${JSON.stringify(body)}, method: ${method}`, mockData);
+            console.warn(
+                `mocking access qiniu api: url: ${url.toString()}, body: ${JSON.stringify(
+                    body
+                )}, method: ${method}`,
+                mockData
+            );
             return mockData;
         }
         if (query2) {
@@ -457,28 +540,37 @@ export class QiniuCloudInstance {
         if (!headers['Content-Type']) {
             headers['Content-Type'] = 'application/x-www-form-urlencoded';
         }
-        const accessToken = this.genernateKodoAccessToken(method || 'GET', host, path, headers, query2, body);
+        const accessToken = this.genernateKodoAccessToken(
+            method || 'GET',
+            host,
+            path,
+            headers,
+            query2,
+            body
+        );
 
         let response: Response;
         try {
             response = await fetch(url.toString(), {
                 method,
                 headers: {
-                    'Authorization': `Qiniu ${accessToken}`,
+                    Authorization: `Qiniu ${accessToken}`,
                     ...headers,
                 },
                 body,
             });
-        }
-        catch (err) {
+        } catch (err) {
             // fetch返回异常一定是网络异常
             throw new OakNetworkException();
         }
 
-
-        const responseType = response.headers.get('Content-Type') || response.headers.get('content-type');
+        const responseType =
+            response.headers.get('Content-Type') ||
+            response.headers.get('content-type');
         // qiniu如果返回空结果，类型也是application/json(delete kodo file)
-        const contentLength = response.headers.get('Content-Length') || response.headers.get('content-length');
+        const contentLength =
+            response.headers.get('Content-Length') ||
+            response.headers.get('content-length');
         if (Number(contentLength) === 0) {
             return;
         }
@@ -490,28 +582,31 @@ export class QiniuCloudInstance {
                 // https://developer.qiniu.com/kodo/3928/error-responses
                 // qiniu的status是重要的返回信息
                 const { error_code, error } = json;
-                throw new OakExternalException('qiniu', error_code, error, { status: response.status });
+                throw new OakExternalException('qiniu', error_code, error, {
+                    status: response.status,
+                });
             }
             return json;
-        }
-        else if (responseType?.toLocaleLowerCase().match(/application\/octet-stream/i)) {
+        } else if (
+            responseType
+                ?.toLocaleLowerCase()
+                .match(/application\/octet-stream/i)
+        ) {
             const result = await response.arrayBuffer();
             return result;
-        }
-        else if (responseType?.toLocaleLowerCase().match(/text\/plain/i)) {
+        } else if (responseType?.toLocaleLowerCase().match(/text\/plain/i)) {
             const result = await response.text();
             console.log(result);
             return result;
-        }
-        else {
+        } else {
             throw new Error(`尚不支持的content-type类型${responseType}`);
         }
     }
 
     /**
      * https://developer.qiniu.com/kodo/1208/upload-token
-     * @param scope 
-     * @returns 
+     * @param scope
+     * @returns
      */
     private generateKodoUploadToken(scope: string) {
         // 构造策略
@@ -539,7 +634,7 @@ export class QiniuCloudInstance {
         path: string,
         headers: Record<string, any>,
         query?: string | null,
-        body?: RequestInit['body'],
+        body?: RequestInit['body']
     ) {
         let signingStr = method + ' ' + path;
         if (query) {
@@ -551,13 +646,11 @@ export class QiniuCloudInstance {
             signingStr += '\nContent-Type: ' + contentType;
         }
         if (headers) {
-            const ks = Object.keys(headers).filter(
-                ele => ele.startsWith('X-Qiniu-'),
+            const ks = Object.keys(headers).filter((ele) =>
+                ele.startsWith('X-Qiniu-')
             );
-            ks.sort((e1, e2) => e1 < e2 ? -1 : 1);
-            ks.forEach(
-                (k) => signingStr += `\n${k}: ${headers[k]}`,
-            );
+            ks.sort((e1, e2) => (e1 < e2 ? -1 : 1));
+            ks.forEach((k) => (signingStr += `\n${k}: ${headers[k]}`));
         }
         signingStr += '\n\n';
         if (body) {

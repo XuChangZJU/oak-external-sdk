@@ -1,8 +1,8 @@
-require('../../fetch');
+require('../../utils/fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
-import FormData from 'form-data';
+import FormData from '../../utils/form-data';
 import {
     OakExternalException,
     OakNetworkException,
@@ -45,7 +45,11 @@ type MpServeMessageOption = {
     };
 };
 
-type ServeMessageOption = TextServeMessageOption | NewsServeMessageOption | MpServeMessageOption | ImageServeMessageOption;
+type ServeMessageOption =
+    | TextServeMessageOption
+    | NewsServeMessageOption
+    | MpServeMessageOption
+    | ImageServeMessageOption;
 
 type MediaType = 'image' | 'voice' | 'video' | 'thumb';
 
@@ -483,8 +487,7 @@ export class WechatPublicInstance {
         if (url) {
             const url2 = new URL.URL(url);
             url2.searchParams.set('access_token', access_token);
-
-            return this.access(url2.toString(), {}, init);
+            return this.access(url2.toString(), init);
         }
     }
 

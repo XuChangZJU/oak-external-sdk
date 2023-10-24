@@ -1,6 +1,7 @@
-require('../../fetch');
+require('../../utils/fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
+import URL from 'url';
 import { OakExternalException, OakNetworkException, OakServerProxyException, } from 'oak-domain/lib/types/Exception';
 import { assert } from 'oak-domain/lib/utils/assert';
 export class WechatWebInstance {
@@ -51,7 +52,7 @@ export class WechatWebInstance {
             const json = await response.json();
             if (typeof json.errcode === 'number' && json.errcode !== 0) {
                 if ([40001, 42001].includes(json.errcode)) {
-                    return this.refreshAccessToken();
+                    return this.refreshAccessToken(url, init);
                 }
                 throw new OakExternalException('wechat', json.errcode, json.errmsg);
             }
@@ -100,7 +101,9 @@ export class WechatWebInstance {
             this.refreshAccessToken();
         }, (expires_in - 10) * 1000);
         if (url) {
-            return this.access(url, init);
+            const url2 = new URL.URL(url);
+            url2.searchParams.set('access_token', access_token);
+            return this.access(url2.toString(), init);
         }
     }
     isJson(data) {

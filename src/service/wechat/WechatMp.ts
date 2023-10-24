@@ -1,8 +1,8 @@
-require('../../fetch');
+require('../../utils/fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
-import FormData from 'form-data';
+import FormData from '../../utils/form-data';
 import {
     OakExternalException,
     OakNetworkException,
@@ -192,7 +192,9 @@ export class WechatMpInstance {
             this.refreshAccessToken();
         }, (expires_in - 10) * 1000);
         if (url) {
-            return this.access(url, init, true);
+            const url2 = new URL.URL(url);
+            url2.searchParams.set('access_token', access_token);
+            return this.access(url2.toString(), init);
         }
     }
 

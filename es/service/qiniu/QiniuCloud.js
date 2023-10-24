@@ -1,15 +1,16 @@
-require('../../fetch');
+require('../../utils/fetch');
 import crypto from 'crypto';
+import URL from 'url';
 import { Md5 } from 'ts-md5';
 import { Buffer } from 'buffer';
 import { stringify } from 'querystring';
-import { OakExternalException, OakNetworkException } from 'oak-domain/lib/types/Exception';
+import { OakExternalException, OakNetworkException, } from 'oak-domain/lib/types/Exception';
 /**
  * qiniu endpoint list
  * https://developer.qiniu.com/kodo/1671/region-endpoint-fq
  */
 const QINIU_ENDPOINT_LIST = {
-    'z0': {
+    z0: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload.qiniup.com',
         sul: 'up.qiniup.com',
@@ -27,7 +28,7 @@ const QINIU_ENDPOINT_LIST = {
         ol: 'rsf-cn-east-2.qiniuapi.com',
         sq: 'api.qiniuapi.com',
     },
-    'z1': {
+    z1: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload-z1.qiniup.com',
         sul: 'up-z1.qiniup.com',
@@ -36,7 +37,7 @@ const QINIU_ENDPOINT_LIST = {
         ol: 'rsf-z1.qiniuapi.com',
         sq: 'api.qiniuapi.com',
     },
-    'z2': {
+    z2: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload-z2.qiniup.com',
         sul: 'up-z2.qiniup.com',
@@ -45,7 +46,7 @@ const QINIU_ENDPOINT_LIST = {
         ol: 'rsf-z2.qiniuapi.com',
         sq: 'api.qiniuapi.com',
     },
-    'na0': {
+    na0: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload-na0.qiniup.com',
         sul: 'up-na0.qiniup.com',
@@ -54,7 +55,7 @@ const QINIU_ENDPOINT_LIST = {
         ol: 'rsf-na0.qiniuapi.com',
         sq: 'api.qiniuapi.com',
     },
-    'as0': {
+    as0: {
         bm: 'uc.qiniuapi.com',
         ul: 'upload-as0.qiniup.com',
         sul: 'up-as0.qiniup.com',
@@ -62,7 +63,7 @@ const QINIU_ENDPOINT_LIST = {
         om: 'rs-as0.qiniuapi.com',
         ol: 'rsf-as0.qiniuapi.com',
         sq: 'api.qiniuapi.com',
-    }
+    },
 };
 function getQueryString(query) {
     if (typeof query === 'string') {
@@ -94,7 +95,8 @@ function formatUTC(date, layout) {
     const second = d.getUTCSeconds();
     const millisecond = d.getUTCMilliseconds();
     let result = layout || 'YYYY-MM-DDTHH:MM:ss.SSSZ';
-    result = result.replace(/YYYY/g, year.toString())
+    result = result
+        .replace(/YYYY/g, year.toString())
         .replace(/MM/g, pad(month))
         .replace(/DD/g, pad(day))
         .replace(/HH/g, pad(hour))
@@ -235,7 +237,11 @@ export class QiniuCloudInstance {
         const result = await this.access(QINIU_ENDPOINT_LIST[zone].ol, path, {
             'Content-Type': 'application/x-www-form-urlencoded',
         }, {
-            bucket, marker, limit, prefix, delimiter
+            bucket,
+            marker,
+            limit,
+            prefix,
+            delimiter,
         }, 'POST', undefined, mockData);
         return result;
     }
@@ -331,7 +337,7 @@ export class QiniuCloudInstance {
      */
     async access(host, path, headers, query, method, body, mockData) {
         const query2 = query && getQueryString(query);
-        const url = new URL(`https://${host}${path}`);
+        const url = new URL.URL(`https://${host}${path}`);
         if (process.env.NODE_ENV === 'development' && mockData) {
             console.warn(`mocking access qiniu api: url: ${url.toString()}, body: ${JSON.stringify(body)}, method: ${method}`, mockData);
             return mockData;
@@ -350,7 +356,7 @@ export class QiniuCloudInstance {
             response = await fetch(url.toString(), {
                 method,
                 headers: {
-                    'Authorization': `Qiniu ${accessToken}`,
+                    Authorization: `Qiniu ${accessToken}`,
                     ...headers,
                 },
                 body,
@@ -360,9 +366,11 @@ export class QiniuCloudInstance {
             // fetch返回异常一定是网络异常
             throw new OakNetworkException();
         }
-        const responseType = response.headers.get('Content-Type') || response.headers.get('content-type');
+        const responseType = response.headers.get('Content-Type') ||
+            response.headers.get('content-type');
         // qiniu如果返回空结果，类型也是application/json(delete kodo file)
-        const contentLength = response.headers.get('Content-Length') || response.headers.get('content-length');
+        const contentLength = response.headers.get('Content-Length') ||
+            response.headers.get('content-length');
         if (Number(contentLength) === 0) {
             return;
         }
@@ -373,11 +381,15 @@ export class QiniuCloudInstance {
                 // https://developer.qiniu.com/kodo/3928/error-responses
                 // qiniu的status是重要的返回信息
                 const { error_code, error } = json;
-                throw new OakExternalException('qiniu', error_code, error, { status: response.status });
+                throw new OakExternalException('qiniu', error_code, error, {
+                    status: response.status,
+                });
             }
             return json;
         }
-        else if (responseType?.toLocaleLowerCase().match(/application\/octet-stream/i)) {
+        else if (responseType
+            ?.toLocaleLowerCase()
+            .match(/application\/octet-stream/i)) {
             const result = await response.arrayBuffer();
             return result;
         }
@@ -422,9 +434,9 @@ export class QiniuCloudInstance {
             signingStr += '\nContent-Type: ' + contentType;
         }
         if (headers) {
-            const ks = Object.keys(headers).filter(ele => ele.startsWith('X-Qiniu-'));
-            ks.sort((e1, e2) => e1 < e2 ? -1 : 1);
-            ks.forEach((k) => signingStr += `\n${k}: ${headers[k]}`);
+            const ks = Object.keys(headers).filter((ele) => ele.startsWith('X-Qiniu-'));
+            ks.sort((e1, e2) => (e1 < e2 ? -1 : 1));
+            ks.forEach((k) => (signingStr += `\n${k}: ${headers[k]}`));
         }
         signingStr += '\n\n';
         if (body) {

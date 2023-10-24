@@ -1,8 +1,8 @@
-require('../../fetch');
+require('../../utils/fetch');
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 import URL from 'url';
-import FormData from 'form-data';
+import FormData from '../../utils/form-data';
 import { OakExternalException, OakNetworkException, OakServerProxyException, } from 'oak-domain/lib/types/Exception';
 import { assert } from 'oak-domain/lib/utils/assert';
 export class WechatPublicInstance {
@@ -319,7 +319,7 @@ export class WechatPublicInstance {
         if (url) {
             const url2 = new URL.URL(url);
             url2.searchParams.set('access_token', access_token);
-            return this.access(url2.toString(), {}, init);
+            return this.access(url2.toString(), init);
         }
     }
     async getQrCode(options) {

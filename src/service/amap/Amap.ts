@@ -1,4 +1,4 @@
-require('../../fetch');
+require('../../utils/fetch');
 import {
     OakExternalException,
     OakNetworkException,
@@ -24,9 +24,7 @@ export class AmapInstance {
         try {
             response = await global.fetch(url);
         } catch (err) {
-            throw new OakNetworkException(
-                `访问amap接口失败，「${url}」`
-            );
+            throw new OakNetworkException(`访问amap接口失败，「${url}」`);
         }
         const jsonData = await response.json();
         if (jsonData.status !== '1') {
