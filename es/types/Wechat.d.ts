@@ -41,6 +41,8 @@ export declare type WechatMpEventData = {
     CreateTime: number;
     MsgID: string;
     MsgType: 'text' | 'image' | 'miniprogrampage' | 'event';
+    Event?: 'user_enter_tempsession';
+    SessionFrom?: string;
     Content?: string;
     MediaId?: string;
     PicUrl?: string;

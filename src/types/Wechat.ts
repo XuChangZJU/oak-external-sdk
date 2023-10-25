@@ -64,6 +64,8 @@ export declare type WechatMpEventData = {
     CreateTime: number;
     MsgID: string;
     MsgType: 'text' | 'image' | 'miniprogrampage' | 'event'; // event 用户在小程序“客服会话按钮”进入客服会话
+    Event?: 'user_enter_tempsession'; //进入会话事件
+    SessionFrom?: string;
 
     Content?: string; // 文本消息内容
     MediaId?: string; // 图片消息媒体id
