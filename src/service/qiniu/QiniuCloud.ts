@@ -1,6 +1,6 @@
 require('../../utils/fetch');
 import crypto from 'crypto';
-import URL, { UrlObject } from 'url';
+import { UrlObject } from 'url';
 import { Md5 } from 'ts-md5';
 import { Buffer } from 'buffer';
 import { stringify } from 'querystring';
@@ -522,7 +522,10 @@ export class QiniuCloudInstance {
         mockData?: any
     ) {
         const query2 = query && getQueryString(query);
-        const url = new URL.URL(`https://${host}${path}`);
+        /**
+         * web/server环境测试通过，小程序没测，by Xc
+         */
+        const url = new URL(`https://${host}${path}`);
         if (process.env.NODE_ENV === 'development' && mockData) {
             console.warn(
                 `mocking access qiniu api: url: ${url.toString()}, body: ${JSON.stringify(
