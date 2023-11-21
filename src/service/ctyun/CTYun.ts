@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk';
+// import AWS from 'aws-sdk';
 import crypto from 'crypto';
 import { Action, CTYunZone } from '../../types/CTYun';
 
@@ -55,11 +55,11 @@ export class CTYunInstance {
 
     getUploadInfo(bucket: string, zone: CTYunZone, key?: string, actions?: Action[]) {
         try {
-            const uploadToken = this.getToken(zone, bucket, actions);
+            // const uploadToken = this.getToken(zone, bucket, actions);
             const signInfo = this.getSignInfo(bucket, actions);
             return {
                 key,
-                uploadToken,
+                // uploadToken,
                 accessKey: this.accessKey,
                 policy: signInfo.encodePolicy,
                 signature: signInfo.signature,
@@ -84,33 +84,33 @@ ction":${actions2},"Resource":["arn:aws:s3:::${bucket}","arn:aws:s
         }
     }
 
-    getToken(zone: CTYunZone, bucket: string, actions?: Action[]) {
-        const config = {
-            accessKeyId: this.accessKey,
-            secretAccessKey: this.secretKey,
-            endpoint: `http://${CTYun_ENDPOINT_LIST[zone].ul}`,
-            region: "ctyun",
-        }
-        const stsClient = new AWS.STS(config);
-        const actions2 = actions ? actions.map((ele) => `s3:${ele}`) : ['s3:*'];
-        const params = {
-            Policy: `{"Version":"2012-10-17","Statement":{"Effect":"Allow","A
-ction":${actions2},"Resource":["arn:aws:s3:::${bucket}","arn:aws:s
-3:::${bucket}/*"]}}`,
-            RoleArn: "arn:aws:iam:::role/oak",
-            RoleSessionName: "oak",
-            DurationSeconds: 900, // 过期时间
-        }
-        stsClient.assumeRole(params, (err, data) => {
-            if (err) {
-                throw err;
-            }
-            else {
-                console.log('success', data);
-                return data;
-            }
-        })
-    }
+//     getToken(zone: CTYunZone, bucket: string, actions?: Action[]) {
+//         const config = {
+//             accessKeyId: this.accessKey,
+//             secretAccessKey: this.secretKey,
+//             endpoint: `http://${CTYun_ENDPOINT_LIST[zone].ul}`,
+//             region: "ctyun",
+//         }
+//         const stsClient = new AWS.STS(config);
+//         const actions2 = actions ? actions.map((ele) => `s3:${ele}`) : ['s3:*'];
+//         const params = {
+//             Policy: `{"Version":"2012-10-17","Statement":{"Effect":"Allow","A
+// ction":${actions2},"Resource":["arn:aws:s3:::${bucket}","arn:aws:s
+// 3:::${bucket}/*"]}}`,
+//             RoleArn: "arn:aws:iam:::role/oak",
+//             RoleSessionName: "oak",
+//             DurationSeconds: 900, // 过期时间
+//         }
+//         stsClient.assumeRole(params, (err, data) => {
+//             if (err) {
+//                 throw err;
+//             }
+//             else {
+//                 console.log('success', data);
+//                 return data;
+//             }
+//         })
+//     }
 
     private base64ToUrlSafe(v: string) {
         return v.replace(/\//g, '_').replace(/\+/g, '-');
