@@ -1,6 +1,6 @@
 // import AWS from 'aws-sdk';
 import crypto from 'crypto';
-import { Action, CTYunZone } from '../../types/CTGun';
+import { Action, CTYunZone } from '../../types/CTYun';
 
 const CTYun_ENDPOINT_LIST = {
     hazz: {
