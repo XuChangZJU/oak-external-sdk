@@ -2,12 +2,15 @@ import WechatSDK, { WechatMpInstance, WechatPublicInstance, WechatWebInstance } 
 import AmapSDK from './AmapSDK';
 import QiniuSDK, { QiniuCloudInstance } from './QiniuSDK';
 import SmsSdk, { TencentSmsInstance, AliSmsInstance } from './SmsSdk';
+import CTYunSDk, { CTYunInstance } from './CTYunSDK';
 
 export * from './service/amap/Amap';
 export {
     AmapSDK,
     QiniuSDK,
     WechatSDK,
+    CTYunSDk,
+    CTYunInstance,
     WechatMpInstance,
     WechatPublicInstance,
     WechatWebInstance,

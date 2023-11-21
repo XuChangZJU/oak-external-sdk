@@ -26,6 +26,7 @@
     },
     "dependencies": {
         "@alicloud/pop-core": "^1.7.12",
+        "aws-sdk": "^2.1499.0",
         "cheerio": "^1.0.0-rc.12",
         "isomorphic-fetch": "^3.0.0",
         "oak-domain": "file:../oak-domain",
