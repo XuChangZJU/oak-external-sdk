@@ -1,4 +1,4 @@
-import { Action, CTYunZone } from '../../types/CTYun';
+import { Action, CTYunZone } from '../../types/CTGun';
 export declare class CTYunInstance {
     private accessKey;
     private secretKey;
