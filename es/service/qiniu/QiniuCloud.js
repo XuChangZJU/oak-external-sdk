@@ -1,6 +1,5 @@
 require('../../utils/fetch');
 import crypto from 'crypto';
-import URL from 'url';
 import { Md5 } from 'ts-md5';
 import { Buffer } from 'buffer';
 import { stringify } from 'querystring';
@@ -337,7 +336,7 @@ export class QiniuCloudInstance {
      */
     async access(host, path, headers, query, method, body, mockData) {
         const query2 = query && getQueryString(query);
-        const url = new URL.URL(`https://${host}${path}`);
+        const url = new URL(`https://${host}${path}`);
         if (process.env.NODE_ENV === 'development' && mockData) {
             console.warn(`mocking access qiniu api: url: ${url.toString()}, body: ${JSON.stringify(body)}, method: ${method}`, mockData);
             return mockData;
