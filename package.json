@@ -25,6 +25,7 @@
         "typescript": "^5.2.2"
     },
     "dependencies": {
+        "@alicloud/dysmsapi20170525": "^2.0.24",
         "@alicloud/pop-core": "^1.7.12",
         "aws-sdk": "^2.1499.0",
         "cheerio": "^1.0.0-rc.12",

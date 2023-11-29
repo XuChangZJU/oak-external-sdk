@@ -1,47 +1,38 @@
-import Core from '@alicloud/pop-core/lib/rpc';
+import Dysmsapi20170525, * as $Dysmsapi20170525 from '@alicloud/dysmsapi20170525';
+import * as $OpenApi from '@alicloud/openapi-client';
+import * as $Util from '@alicloud/tea-util';
 export class AliSmsInstance {
     accessKeyId;
     accessKeySecret;
-    regionId;
     endpoint;
-    apiVersion;
     client;
-    constructor(accessKeyId, accessKeySecret, regionId, endpoint, apiVersion) {
+    constructor(accessKeyId, accessKeySecret, endpoint) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
-        this.regionId = regionId;
-        this.endpoint = endpoint;
-        this.apiVersion = apiVersion;
-        this.client = new Core({
-            accessKeyId: this.accessKeyId,
-            accessKeySecret: this.accessKeySecret,
-            endpoint: this.endpoint || 'dysmsapi.aliyuncs.com',
-            apiVersion: this.apiVersion,
+        this.endpoint = endpoint || 'dysmsapi.aliyuncs.com'; // 目前国内终端域名相同
+        let config = new $OpenApi.Config({
+            // 必填，您的 AccessKey ID
+            accessKeyId: accessKeyId,
+            // 必填，您的 AccessKey Secret
+            accessKeySecret: accessKeySecret,
+            endpoint: this.endpoint,
         });
+        this.client = new Dysmsapi20170525(config);
     }
     async sendSms(params) {
         const { PhoneNumbers, TemplateParam = {}, TemplateCode, SignName, } = params;
-        const param = Object.assign({
-            regionId: this.regionId,
-        }, {
+        let sendSmsRequest = new $Dysmsapi20170525.SendSmsRequest({
             PhoneNumbers: PhoneNumbers.join(','),
             TemplateParam: JSON.stringify(TemplateParam),
             TemplateCode: TemplateCode,
             SignName: SignName,
         });
         try {
-            // const data = await this.client.request<SendSmsResponse>(
-            //     'SendSms',
-            //     param,
-            //     {
-            //         method: 'POST',
-            //     }
-            // );
-            // return data;
+            const data = await this.client.sendSmsWithOptions(sendSmsRequest, new $Util.RuntimeOptions({}));
+            return data;
         }
-        catch (err) {
-            console.error(err);
-            throw err;
+        catch (error) {
+            throw error;
         }
     }
 }

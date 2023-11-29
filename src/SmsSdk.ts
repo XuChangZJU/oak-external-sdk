@@ -15,8 +15,8 @@ class SmsSDK {
         origin: 'ali' | 'tencent',
         accessKey: string,
         accessSecret: string,
-        region: string,
         endpoint: string,
+        region?: string,
         apiVersion?: string //阿里云独有
     ) {
         if (origin === 'tencent') {
@@ -26,26 +26,24 @@ class SmsSDK {
             const instance = new TencentSmsInstance(
                 accessKey,
                 accessSecret,
-                region,
-                endpoint
+                region!,
+                endpoint!,
             );
             Object.assign(this.tencentMap, {
                 [accessKey]: instance,
             });
             return instance;
         } else if (origin === 'ali') {
-            if (!apiVersion) {
-                assert(false, '阿里云短信apiVersion必须传入');
-            }
+            // if (!apiVersion) {
+            //     assert(false, '阿里云短信apiVersion必须传入');
+            // }
             if (this.aliMap[accessKey]) {
                 return this.aliMap[accessKey];
             }
             const instance = new AliSmsInstance(
                 accessKey,
                 accessSecret,
-                region,
                 endpoint,
-                apiVersion
             );
             Object.assign(this.aliMap, {
                 [accessKey]: instance,

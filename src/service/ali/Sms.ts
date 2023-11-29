@@ -1,4 +1,7 @@
-import Core from '@alicloud/pop-core/lib/rpc';
+import Dysmsapi20170525, * as $Dysmsapi20170525 from '@alicloud/dysmsapi20170525';
+import OpenApi, * as $OpenApi from '@alicloud/openapi-client';
+import Util, * as $Util from '@alicloud/tea-util';
+import * as $tea from '@alicloud/tea-typescript';
 
 type SendSmsRequest = {
     PhoneNumbers: string[];
@@ -19,30 +22,25 @@ type SendSmsResponse = {
 export class AliSmsInstance {
     accessKeyId: string;
     accessKeySecret: string;
-    regionId: string;
     endpoint: string;
-    apiVersion: string;
-    client: Core;
+    client: Dysmsapi20170525;
 
     constructor(
         accessKeyId: string,
         accessKeySecret: string,
-        regionId: string,
-        endpoint: string,
-        apiVersion: string
+        endpoint?: string,
     ) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
-        this.regionId = regionId;
-        this.endpoint = endpoint;
-        this.apiVersion = apiVersion;
-
-        this.client = new Core({
-            accessKeyId: this.accessKeyId,
-            accessKeySecret: this.accessKeySecret,
-            endpoint: this.endpoint || 'dysmsapi.aliyuncs.com',
-            apiVersion: this.apiVersion,
+        this.endpoint = endpoint || 'dysmsapi.aliyuncs.com'; // 目前国内终端域名相同
+        let config = new $OpenApi.Config({
+            // 必填，您的 AccessKey ID
+            accessKeyId: accessKeyId,
+            // 必填，您的 AccessKey Secret
+            accessKeySecret: accessKeySecret,
+            endpoint: this.endpoint,
         });
+        this.client = new Dysmsapi20170525(config);
     }
 
     async sendSms(params: SendSmsRequest) {
@@ -52,30 +50,17 @@ export class AliSmsInstance {
             TemplateCode,
             SignName,
         } = params;
-        const param = Object.assign(
-            {
-                regionId: this.regionId,
-            },
-            {
-                PhoneNumbers: PhoneNumbers.join(','),
-                TemplateParam: JSON.stringify(TemplateParam),
-                TemplateCode: TemplateCode,
-                SignName: SignName,
-            }
-        );
-
+        let sendSmsRequest = new $Dysmsapi20170525.SendSmsRequest({
+            PhoneNumbers: PhoneNumbers.join(','),
+            TemplateParam: JSON.stringify(TemplateParam),
+            TemplateCode: TemplateCode,
+            SignName: SignName,
+        });
         try {
-            // const data = await this.client.request<SendSmsResponse>(
-            //     'SendSms',
-            //     param,
-            //     {
-            //         method: 'POST',
-            //     }
-            // );
-            // return data;
-        } catch (err) {
-            console.error(err);
-            throw err;
+            const data = await this.client.sendSmsWithOptions(sendSmsRequest, new $Util.RuntimeOptions({}));
+            return data;
+        } catch (error) {
+            throw error;
         }
     }
 }

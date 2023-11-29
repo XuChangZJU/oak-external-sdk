@@ -4,7 +4,7 @@ declare class SmsSDK {
     tencentMap: Record<string, TencentSmsInstance>;
     aliMap: Record<string, AliSmsInstance>;
     constructor();
-    getInstance(origin: 'ali' | 'tencent', accessKey: string, accessSecret: string, region: string, endpoint: string, apiVersion?: string): TencentSmsInstance | AliSmsInstance;
+    getInstance(origin: 'ali' | 'tencent', accessKey: string, accessSecret: string, endpoint: string, region?: string, apiVersion?: string): TencentSmsInstance | AliSmsInstance;
 }
 declare const SDK: SmsSDK;
 export default SDK;
