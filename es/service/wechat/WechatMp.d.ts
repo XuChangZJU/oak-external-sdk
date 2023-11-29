@@ -91,5 +91,15 @@ export declare class WechatMpInstance {
     }): Promise<any>;
     sendServeMessage(options: ServeMessageOption): Promise<any>;
     private isJson;
+    getURLScheme(options: {
+        jump_wxa: {
+            path?: string;
+            query?: string;
+            env_version?: string;
+        };
+        expireType?: number;
+        expiresAt?: number;
+        expireInterval?: number;
+    }): Promise<any>;
 }
 export {};
