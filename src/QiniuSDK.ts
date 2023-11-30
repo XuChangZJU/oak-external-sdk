@@ -1,5 +1,4 @@
 import { QiniuCloudInstance } from './service/qiniu/QiniuCloud';
-import { QiniuZone } from './types/Qiniu';
 
 class QiniuSDK {
     qiniuMap: Record<string, QiniuCloudInstance>;

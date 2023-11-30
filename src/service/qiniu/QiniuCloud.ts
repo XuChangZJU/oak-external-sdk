@@ -1,6 +1,5 @@
 require('../../utils/fetch');
 import crypto from 'crypto';
-import { UrlObject } from 'url';
 import { Md5 } from 'ts-md5';
 import { Buffer } from 'buffer';
 import { stringify } from 'querystring';
@@ -8,6 +7,7 @@ import {
     OakExternalException,
     OakNetworkException,
 } from 'oak-domain/lib/types/Exception';
+import { url as URL, urlObject as UrlObject } from 'oak-domain/lib/utils/url/index';
 import { QiniuZone } from '../../types/Qiniu';
 
 /**
