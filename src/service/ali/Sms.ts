@@ -4,12 +4,12 @@ import Util, * as $Util from '@alicloud/tea-util';
 import * as $tea from '@alicloud/tea-typescript';
 
 type SendSmsRequest = {
-    PhoneNumbers: string[];
-    TemplateCode: string;
-    SignName: string;
-    TemplateParam?: Record<string, string>;
-    SmsUpExtendCode?: string;
-    OutId?: string;
+    phoneNumbers: string[];
+    templateCode: string;
+    signName: string;
+    templateParam?: Record<string, string>;
+    smsUpExtendCode?: string;
+    outId?: string;
 };
 
 type SendSmsResponse = {
@@ -45,20 +45,24 @@ export class AliSmsInstance {
 
     async sendSms(params: SendSmsRequest) {
         const {
-            PhoneNumbers,
-            TemplateParam = {},
-            TemplateCode,
-            SignName,
+            phoneNumbers,
+            templateParam = {},
+            templateCode,
+            signName,
         } = params;
         let sendSmsRequest = new $Dysmsapi20170525.SendSmsRequest({
-            PhoneNumbers: PhoneNumbers.join(','),
-            TemplateParam: JSON.stringify(TemplateParam),
-            TemplateCode: TemplateCode,
-            SignName: SignName,
+            phoneNumbers: (phoneNumbers instanceof Array) ? phoneNumbers.join(',') : phoneNumbers,
+            templateParam: JSON.stringify(templateParam),
+            templateCode: templateCode,
+            signName: signName,
         });
         try {
             const data = await this.client.sendSmsWithOptions(sendSmsRequest, new $Util.RuntimeOptions({}));
-            return data;
+            const { statusCode, body } = data;
+            if (statusCode != 200) {
+                throw new Error(`ali.sendSms接口返回状态码错误，为${statusCode}`);
+            }
+            return body;
         } catch (error) {
             throw error;
         }
