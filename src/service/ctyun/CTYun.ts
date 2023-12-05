@@ -25,7 +25,7 @@ const CTYun_ENDPOINT_LIST = {
         ul: 'oos-gzgy.ctyunapi.cn',
     },
     hbwh: {
-        ul: 'oos-gslz.ctyunapi.cn',
+        ul: 'oos-hbwh.ctyunapi.cn',
     },
     xzls: {
         ul: 'oos-xzls.ctyunapi.cn',
@@ -53,17 +53,17 @@ export class CTYunInstance {
         this.secretKey = secretKey;
     }
 
-    getUploadInfo(bucket: string, zone: CTYunZone, key?: string, actions?: Action[]) {
+    getUploadInfo(bucket: string, zone: CTYunZone, key?: string) {
         try {
             // const uploadToken = this.getToken(zone, bucket, actions);
-            const signInfo = this.getSignInfo(bucket, actions);
+            const signInfo = this.getSignInfo(bucket);
             return {
                 key,
                 // uploadToken,
                 accessKey: this.accessKey,
                 policy: signInfo.encodePolicy,
                 signature: signInfo.signature,
-                uploadHost: `https://${CTYun_ENDPOINT_LIST[zone].ul}`,
+                uploadHost: `http://${bucket}.${CTYun_ENDPOINT_LIST[zone].ul}`,
                 bucket,
             };
         } catch (err) {
@@ -71,17 +71,29 @@ export class CTYunInstance {
         }
     }
 
-    getSignInfo(bucket: string, actions?: Action[]) {
-        const actions2 = actions ? actions.map((ele) => `s3:${ele}`) : ['s3:*'];
-        const policy = `{"Version":"2012-10-17","Statement":{"Effect":"Allow","A
-ction":${actions2},"Resource":["arn:aws:s3:::${bucket}","arn:aws:s
-3:::${bucket}/*"]}}`;
-        const encodePolicy = this.urlSafeBase64Encode(policy);
+    getSignInfo(bucket: string) {
+        const policy = {
+            Version: "2012-10-17",
+            Statement: [{
+                Effect: "Allow",
+                Action: ["oos:*"],
+                Resource: `arn:ctyun:oos:::${bucket} /*`
+            }],
+            expiration: "2023-12-01T12:00:00.000Z",
+            conditions: [{
+                bucket: bucket,
+            }, [
+                "starts-with",
+                "$key",
+                "extraFile",
+            ]]
+        }
+        const encodePolicy = this.urlSafeBase64Encode(JSON.stringify(policy));
         const signature = this.hmacSha1(encodePolicy, this.secretKey);
         return {
             encodePolicy,
             signature
-        }
+        };
     }
 
 //     getToken(zone: CTYunZone, bucket: string, actions?: Action[]) {
