@@ -473,6 +473,33 @@ export class WechatMpInstance {
         return Object.assign({ success: false }, result);
     }
 
+    async getAllPrivateTemplate() {
+        const myInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = (await this.access(
+            `https://api.weixin.qq.com/wxaapi/newtmpl/gettemplate?access_token=${token}`,
+            myInit
+        )) as {
+            data: {
+                priTmplId: string;
+                title: string;
+                type: number;
+                content: string;
+                example: string;
+                keywordEnumValueList?: Array<{
+                    keywordCode: string;
+                    enumValueList: Array<string>;
+                }>;
+            }[];
+        };
+        return result.data;
+    }
+
     private isJson(data: string) {
         try {
             JSON.parse(data);
@@ -480,5 +507,30 @@ export class WechatMpInstance {
         } catch (e) {
             return false;
         }
+    }
+
+    async getURLScheme(options: {
+        jump_wxa: { path?: string; query?: string; env_version?: string };
+        expireType?: number;
+        expiresAt?: number;
+        expireInterval?: number;
+    }) {
+        const { jump_wxa, expiresAt, expireType = 0, expireInterval } = options;
+
+        const token = await this.getAccessToken();
+        const result = await this.access(
+            `https://api.weixin.qq.com/wxa/generatescheme?access_token=${token}`,
+            {
+                method: 'POST',
+                body: JSON.stringify({
+                    jump_wxa: jump_wxa,
+                    is_expire: true,
+                    expire_type: expireType, //默认是零，到期失效的 scheme 码失效类型，失效时间类型：0，失效间隔天数类型：1
+                    expire_time: expiresAt,
+                    expire_interval: expireInterval,
+                }),
+            }
+        );
+        return result;
     }
 }

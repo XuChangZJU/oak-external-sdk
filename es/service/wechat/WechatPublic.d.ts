@@ -186,15 +186,13 @@ export declare class WechatPublicInstance {
     }): Promise<any>;
     getTicket(): Promise<string>;
     getAllPrivateTemplate(): Promise<{
-        template_list: {
-            template_id: string;
-            title: string;
-            primary_industry: string;
-            deputy_industry: string;
-            content: string;
-            example: string;
-        }[];
-    }>;
+        template_id: string;
+        title: string;
+        primary_industry: string;
+        deputy_industry: string;
+        content: string;
+        example: string;
+    }[]>;
     private isJson;
     decryptData(sessionKey: string, encryptedData: string, iv: string, signature: string): any;
     private randomString;

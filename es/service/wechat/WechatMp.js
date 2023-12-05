@@ -304,6 +304,17 @@ export class WechatMpInstance {
         }
         return Object.assign({ success: false }, result);
     }
+    async getAllPrivateTemplate() {
+        const myInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = (await this.access(`https://api.weixin.qq.com/wxaapi/newtmpl/gettemplate?access_token=${token}`, myInit));
+        return result.data;
+    }
     isJson(data) {
         try {
             JSON.parse(data);
@@ -312,5 +323,20 @@ export class WechatMpInstance {
         catch (e) {
             return false;
         }
+    }
+    async getURLScheme(options) {
+        const { jump_wxa, expiresAt, expireType = 0, expireInterval } = options;
+        const token = await this.getAccessToken();
+        const result = await this.access(`https://api.weixin.qq.com/wxa/generatescheme?access_token=${token}`, {
+            method: 'POST',
+            body: JSON.stringify({
+                jump_wxa: jump_wxa,
+                is_expire: true,
+                expire_type: expireType,
+                expire_time: expiresAt,
+                expire_interval: expireInterval,
+            }),
+        });
+        return result;
     }
 }

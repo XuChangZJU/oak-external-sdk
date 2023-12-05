@@ -1,3 +1,2 @@
-// native不支持FormData
-const formData = {};
+const formData = FormData;
 export default formData;

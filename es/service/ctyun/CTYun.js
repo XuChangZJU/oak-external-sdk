@@ -23,7 +23,7 @@ const CTYun_ENDPOINT_LIST = {
         ul: 'oos-gzgy.ctyunapi.cn',
     },
     hbwh: {
-        ul: 'oos-gslz.ctyunapi.cn',
+        ul: 'oos-hbwh.ctyunapi.cn',
     },
     xzls: {
         ul: 'oos-xzls.ctyunapi.cn',
@@ -50,11 +50,9 @@ export class CTYunInstance {
     }
     getUploadInfo(bucket, zone, key, actions) {
         try {
-            // const uploadToken = this.getToken(zone, bucket, actions);
             const signInfo = this.getSignInfo(bucket, actions);
             return {
                 key,
-                // uploadToken,
                 accessKey: this.accessKey,
                 policy: signInfo.encodePolicy,
                 signature: signInfo.signature,

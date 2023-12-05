@@ -1,5 +1,5 @@
 import { Client } from 'tencentcloud-sdk-nodejs/tencentcloud/services/sms/v20210111/sms_client';
-import { SendSmsRequest, SendSmsResponse } from 'tencentcloud-sdk-nodejs/tencentcloud/services/sms/v20210111/sms_models';
+import { SendSmsRequest, SendSmsResponse, DescribeSmsTemplateListRequest, DescribeSmsTemplateListResponse } from 'tencentcloud-sdk-nodejs/tencentcloud/services/sms/v20210111/sms_models';
 
 const SmsClient = Client;
 
@@ -39,15 +39,18 @@ export class TencentSmsInstance {
     }
 
     async sendSms(params: SendSmsRequest) {
-        // const params: SendSmsRequest = {
-        //     PhoneNumberSet: [],
-        //     TemplateParamSet: [],
-        //     SmsSdkAppId: '',
-        //     TemplateId: '',
-        // };
         try {
-            const data: SendSmsResponse = await this.client.SendSms(params);
-            return data;
+            const result: SendSmsResponse = await this.client.SendSms(params);
+            return result;
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
+    async syncTemplate(params: DescribeSmsTemplateListRequest) {
+        try {
+            const result: DescribeSmsTemplateListResponse = await this.client.DescribeSmsTemplateList(params);
+            return result
         } catch (err) {
             console.error(err);
             throw err;

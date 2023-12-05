@@ -5,7 +5,7 @@ import {
 
 export class TencentSmsInstance {
     async sendSms(params: SendSmsRequest) {
-        console.log('native走不到这里');
+        console.log('react-native走不到这里[tencent/sms.native]');
         return {} as SendSmsResponse;
     }
 }

@@ -4,6 +4,7 @@ import { Md5 } from 'ts-md5';
 import { Buffer } from 'buffer';
 import { stringify } from 'querystring';
 import { OakExternalException, OakNetworkException, } from 'oak-domain/lib/types/Exception';
+import { url as URL } from 'oak-domain/lib/utils/url/index';
 /**
  * qiniu endpoint list
  * https://developer.qiniu.com/kodo/1671/region-endpoint-fq
