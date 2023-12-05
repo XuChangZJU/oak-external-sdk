@@ -42,7 +42,7 @@ const CTYun_ENDPOINT_LIST = {
     sh2: {
         ul: 'oos-sh2.ctyunapi.cn',
     },
-}
+};
 
 export class CTYunInstance {
     private accessKey: string;
@@ -59,7 +59,6 @@ export class CTYunInstance {
             const signInfo = this.getSignInfo(bucket);
             return {
                 key,
-                // uploadToken,
                 accessKey: this.accessKey,
                 policy: signInfo.encodePolicy,
                 signature: signInfo.signature,
@@ -72,6 +71,11 @@ export class CTYunInstance {
     }
 
     getSignInfo(bucket: string) {
+        // 对于policy里的expiration，我在天翼云的文档里没有找到具体的说明，但是这个字段不填入就会请求失败
+        // 设置一个明天过期的时间
+        const now = new Date();
+        now.setDate(now.getDate() + 1);
+        const tomorrow = now.toISOString();
         const policy = {
             Version: "2012-10-17",
             Statement: [{
@@ -79,7 +83,7 @@ export class CTYunInstance {
                 Action: ["oos:*"],
                 Resource: `arn:ctyun:oos:::${bucket} /*`
             }],
-            expiration: "2023-12-01T12:00:00.000Z",
+            expiration: tomorrow,
             conditions: [{
                 bucket: bucket,
             }, [

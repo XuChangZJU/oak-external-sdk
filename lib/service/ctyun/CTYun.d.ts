@@ -1,9 +1,9 @@
-import { Action, CTYunZone } from '../../types/CTYun';
+import { CTYunZone } from '../../types/CTYun';
 export declare class CTYunInstance {
     private accessKey;
     private secretKey;
     constructor(accessKey: string, secretKey: string);
-    getUploadInfo(bucket: string, zone: CTYunZone, key?: string, actions?: Action[]): {
+    getUploadInfo(bucket: string, zone: CTYunZone, key?: string): {
         key: string | undefined;
         accessKey: string;
         policy: string;
@@ -11,7 +11,7 @@ export declare class CTYunInstance {
         uploadHost: string;
         bucket: string;
     };
-    getSignInfo(bucket: string, actions?: Action[]): {
+    getSignInfo(bucket: string): {
         encodePolicy: string;
         signature: string;
     };

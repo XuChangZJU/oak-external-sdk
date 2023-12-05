@@ -90,6 +90,17 @@ export declare class WechatMpInstance {
         mediaId: string;
     }): Promise<any>;
     sendServeMessage(options: ServeMessageOption): Promise<any>;
+    getAllPrivateTemplate(): Promise<{
+        priTmplId: string;
+        title: string;
+        type: number;
+        content: string;
+        example: string;
+        keywordEnumValueList?: {
+            keywordCode: string;
+            enumValueList: Array<string>;
+        }[] | undefined;
+    }[]>;
     private isJson;
     getURLScheme(options: {
         jump_wxa: {

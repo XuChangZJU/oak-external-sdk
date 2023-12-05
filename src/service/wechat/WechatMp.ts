@@ -178,8 +178,8 @@ export class WechatMpInstance {
         const result = this.externalRefreshFn
             ? await this.externalRefreshFn(this.appId)
             : await this.access(
-                `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
-            );
+                  `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`
+              );
         const { access_token, expires_in } = result;
         this.accessToken = access_token;
         if (process.env.NODE_ENV === 'development') {
@@ -473,6 +473,33 @@ export class WechatMpInstance {
         return Object.assign({ success: false }, result);
     }
 
+    async getAllPrivateTemplate() {
+        const myInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+        const token = await this.getAccessToken();
+        const result = (await this.access(
+            `https://api.weixin.qq.com/wxaapi/newtmpl/gettemplate?access_token=${token}`,
+            myInit
+        )) as {
+            data: {
+                priTmplId: string;
+                title: string;
+                type: number;
+                content: string;
+                example: string;
+                keywordEnumValueList?: Array<{
+                    keywordCode: string;
+                    enumValueList: Array<string>;
+                }>;
+            }[];
+        };
+        return result.data;
+    }
+
     private isJson(data: string) {
         try {
             JSON.parse(data);
@@ -482,7 +509,12 @@ export class WechatMpInstance {
         }
     }
 
-    async getURLScheme(options: { jump_wxa: { path?: string, query?: string, env_version?: string }, expireType?: number, expiresAt?: number, expireInterval?: number }) {
+    async getURLScheme(options: {
+        jump_wxa: { path?: string; query?: string; env_version?: string };
+        expireType?: number;
+        expiresAt?: number;
+        expireInterval?: number;
+    }) {
         const { jump_wxa, expiresAt, expireType = 0, expireInterval } = options;
 
         const token = await this.getAccessToken();
@@ -491,11 +523,11 @@ export class WechatMpInstance {
             {
                 method: 'POST',
                 body: JSON.stringify({
-                    "jump_wxa": jump_wxa,
-                    "is_expire": true,
-                    "expire_type": expireType, //默认是零，到期失效的 scheme 码失效类型，失效时间类型：0，失效间隔天数类型：1
-                    'expire_time': expiresAt,
-                    "expire_interval": expireInterval,
+                    jump_wxa: jump_wxa,
+                    is_expire: true,
+                    expire_type: expireType, //默认是零，到期失效的 scheme 码失效类型，失效时间类型：0，失效间隔天数类型：1
+                    expire_time: expiresAt,
+                    expire_interval: expireInterval,
                 }),
             }
         );
