@@ -673,7 +673,7 @@ export class WechatPublicInstance {
         };
         const token = await this.getAccessToken();
         const result = (await this.access(`https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=${token}`, myInit));
-        return result;
+        return result.template_list;
     }
     isJson(data) {
         try {

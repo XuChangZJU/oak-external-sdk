@@ -993,7 +993,7 @@ export class WechatPublicInstance {
                 example: string;
             }[];
         };
-        return result;
+        return result.template_list;
     }
 
     private isJson(data: string) {
