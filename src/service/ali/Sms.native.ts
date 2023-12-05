@@ -47,7 +47,7 @@ export class AliSmsInstance {
     }
 
     async sendSms(params: SendSmsRequest) {
-        console.log('react-native走不到这里');
+        console.log('react-native走不到这里[ali/sms.native');
         return {} as SendSmsResponse;
     }
 }
