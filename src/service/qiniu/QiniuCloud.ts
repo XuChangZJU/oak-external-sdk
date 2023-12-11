@@ -7,7 +7,7 @@ import {
     OakExternalException,
     OakNetworkException,
 } from 'oak-domain/lib/types/Exception';
-import { url as URL, urlObject as UrlObject } from 'oak-domain/lib/utils/url/index';
+import { url as URL, urlObject as UrlObject } from 'oak-domain/lib/utils/url';
 import { QiniuZone } from '../../types/Qiniu';
 
 /**
