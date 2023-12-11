@@ -62,7 +62,7 @@ export class CTYunInstance {
                 accessKey: this.accessKey,
                 policy: signInfo.encodePolicy,
                 signature: signInfo.signature,
-                uploadHost: `http://${bucket}.${CTYun_ENDPOINT_LIST[zone].ul}`,
+                uploadHost: `https://${bucket}.${CTYun_ENDPOINT_LIST[zone].ul}`,
                 bucket,
             };
         } catch (err) {
