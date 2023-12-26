@@ -5,4 +5,12 @@
  */
 export type Action = '*' | 'PutObject' | 'GetObject' | 'DeleteObject' | 'ListBucket';
 
+export type ReqOptionProps = {
+    path: string;
+    host: string;
+    date: string;
+    headers: any
+    method: 'DELETE' | "GET" | "POST" | "PUT",
+}
+
 export type CTYunZone = 'hazz' | 'lnsy' | 'sccd' | 'xjwlmq' | 'gslz' | 'sdqd' | 'gzgy' | 'hbwh' | 'xzls' | 'ahwh' | 'gdsz' | 'jssz' | 'sh2';
