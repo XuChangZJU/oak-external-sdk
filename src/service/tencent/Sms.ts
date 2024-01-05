@@ -52,7 +52,6 @@ export class TencentSmsInstance {
             const result: DescribeSmsTemplateListResponse = await this.client.DescribeSmsTemplateList(params);
             return result
         } catch (err) {
-            console.error(err);
             throw err;
         }
     }

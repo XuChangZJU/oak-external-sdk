@@ -1,12 +1,15 @@
 import { TencentSmsInstance } from './service/tencent/Sms';
 import { AliSmsInstance } from './service/ali/Sms';
+import { CTYunSmsInstance } from './service/ctyun/Sms';
 import { assert } from 'oak-domain/lib/utils/assert';
 class SmsSDK {
     tencentMap;
     aliMap;
+    ctyunMap;
     constructor() {
         this.tencentMap = {};
         this.aliMap = {};
+        this.ctyunMap = {};
     }
     getInstance(origin, accessKey, accessSecret, endpoint, region, apiVersion //阿里云独有
     ) {
@@ -33,6 +36,16 @@ class SmsSDK {
             });
             return instance;
         }
+        else if (origin === 'ctyun') {
+            if (this.ctyunMap[accessKey]) {
+                return this.ctyunMap[accessKey];
+            }
+            const instance = new CTYunSmsInstance(accessKey, accessSecret, endpoint);
+            Object.assign(this.ctyunMap, {
+                [accessKey]: instance,
+            });
+            return instance;
+        }
         else {
             assert(false, `${origin} not implemented`);
         }
@@ -40,4 +53,4 @@ class SmsSDK {
 }
 const SDK = new SmsSDK();
 export default SDK;
-export { TencentSmsInstance, AliSmsInstance };
+export { TencentSmsInstance, AliSmsInstance, CTYunSmsInstance };

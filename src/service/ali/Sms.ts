@@ -19,6 +19,7 @@ type SendSmsResponse = {
     RequestId: string;
 };
 
+
 export class AliSmsInstance {
     accessKeyId: string;
     accessKeySecret: string;
@@ -28,7 +29,7 @@ export class AliSmsInstance {
     constructor(
         accessKeyId: string,
         accessKeySecret: string,
-        endpoint?: string,
+        endpoint?: string
     ) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
@@ -51,20 +52,52 @@ export class AliSmsInstance {
             signName,
         } = params;
         let sendSmsRequest = new $Dysmsapi20170525.SendSmsRequest({
-            phoneNumbers: (phoneNumbers instanceof Array) ? phoneNumbers.join(',') : phoneNumbers,
+            phoneNumbers:
+                phoneNumbers instanceof Array
+                    ? phoneNumbers.join(',')
+                    : phoneNumbers,
             templateParam: JSON.stringify(templateParam),
             templateCode: templateCode,
             signName: signName,
         });
         try {
-            const data = await this.client.sendSmsWithOptions(sendSmsRequest, new $Util.RuntimeOptions({}));
+            const data = await this.client.sendSmsWithOptions(
+                sendSmsRequest,
+                new $Util.RuntimeOptions({})
+            );
             const { statusCode, body } = data;
             if (statusCode != 200) {
-                throw new Error(`ali.sendSms接口返回状态码错误，为${statusCode}`);
+                throw new Error(
+                    `sendSms接口返回状态码错误，为${statusCode}`
+                );
             }
             return body;
         } catch (error) {
             throw error;
+        }
+    }
+    async syncTemplate(params: $Dysmsapi20170525.QuerySmsTemplateListRequest) {
+        const { PageIndex, PageSize } = params;
+
+        try {
+            let querySmsTemplateListRequest =
+                new $Dysmsapi20170525.QuerySmsTemplateListRequest({
+                    PageIndex,
+                    PageSize,
+                });
+            const result = await this.client.querySmsTemplateListWithOptions(
+                querySmsTemplateListRequest,
+                new $Util.RuntimeOptions({})
+            );
+            const { statusCode, body } = result;
+            if (statusCode != 200) {
+                throw new Error(
+                    `syncTemplate接口返回状态码错误，为${statusCode}`
+                );
+            }
+            return body;
+        } catch (err) {
+            throw err;
         }
     }
 }

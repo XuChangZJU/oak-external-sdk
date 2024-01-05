@@ -22,7 +22,9 @@ export class AliSmsInstance {
     async sendSms(params) {
         const { phoneNumbers, templateParam = {}, templateCode, signName, } = params;
         let sendSmsRequest = new $Dysmsapi20170525.SendSmsRequest({
-            phoneNumbers: (phoneNumbers instanceof Array) ? phoneNumbers.join(',') : phoneNumbers,
+            phoneNumbers: phoneNumbers instanceof Array
+                ? phoneNumbers.join(',')
+                : phoneNumbers,
             templateParam: JSON.stringify(templateParam),
             templateCode: templateCode,
             signName: signName,
@@ -31,12 +33,30 @@ export class AliSmsInstance {
             const data = await this.client.sendSmsWithOptions(sendSmsRequest, new $Util.RuntimeOptions({}));
             const { statusCode, body } = data;
             if (statusCode != 200) {
-                throw new Error(`ali.sendSms接口返回状态码错误，为${statusCode}`);
+                throw new Error(`sendSms接口返回状态码错误，为${statusCode}`);
             }
             return body;
         }
         catch (error) {
             throw error;
+        }
+    }
+    async syncTemplate(params) {
+        const { PageIndex, PageSize } = params;
+        try {
+            let querySmsTemplateListRequest = new $Dysmsapi20170525.QuerySmsTemplateListRequest({
+                PageIndex,
+                PageSize,
+            });
+            const result = await this.client.querySmsTemplateListWithOptions(querySmsTemplateListRequest, new $Util.RuntimeOptions({}));
+            const { statusCode, body } = result;
+            if (statusCode != 200) {
+                throw new Error(`syncTemplate接口返回状态码错误，为${statusCode}`);
+            }
+            return body;
+        }
+        catch (err) {
+            throw err;
         }
     }
 }

@@ -14,5 +14,6 @@ export declare class AliSmsInstance {
     client: Dysmsapi20170525;
     constructor(accessKeyId: string, accessKeySecret: string, endpoint?: string);
     sendSms(params: SendSmsRequest): Promise<$Dysmsapi20170525.SendSmsResponseBody>;
+    syncTemplate(params: $Dysmsapi20170525.QuerySmsTemplateListRequest): Promise<$Dysmsapi20170525.QuerySmsTemplateListResponseBody>;
 }
 export {};

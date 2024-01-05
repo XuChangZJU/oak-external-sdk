@@ -13,12 +13,12 @@ type SendSmsResponse = {
     RequestId: string;
 };
 export declare class AliSmsInstance {
-    secretId: string;
-    secretKey: string;
+    accessKeyId: string;
+    accessKeySecret: string;
     region: string;
     endpoint: string;
     client: any;
-    constructor(secretId: string, secretKey: string, region: string, endpoint: string);
+    constructor(accessKeyId: string, accessKeySecret: string, region: string, endpoint: string);
     sendSms(params: SendSmsRequest): Promise<SendSmsResponse>;
 }
 export {};

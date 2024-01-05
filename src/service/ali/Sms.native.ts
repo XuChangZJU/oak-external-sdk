@@ -15,35 +15,22 @@ type SendSmsResponse = {
 };
 
 export class AliSmsInstance {
-    secretId: string;
-    secretKey: string;
+    accessKeyId: string;
+    accessKeySecret: string;
     region: string;
     endpoint: string;
     client: any;
 
     constructor(
-        secretId: string,
-        secretKey: string,
+        accessKeyId: string,
+        accessKeySecret: string,
         region: string,
         endpoint: string
     ) {
-        this.secretId = secretId;
-        this.secretKey = secretKey;
+        this.accessKeyId = accessKeyId;
+        this.accessKeySecret = accessKeySecret;
         this.region = region;
         this.endpoint = endpoint;
-
-        const clientConfig = {
-            credential: {
-                secretId: this.secretId,
-                secretKey: this.secretKey,
-            },
-            region: this.region,
-            profile: {
-                httpProfile: {
-                    endpoint: this.endpoint || 'dysmsapi.aliyuncs.com',
-                },
-            },
-        };
     }
 
     async sendSms(params: SendSmsRequest) {

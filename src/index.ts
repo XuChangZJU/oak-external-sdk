@@ -1,7 +1,11 @@
 import WechatSDK, { WechatMpInstance, WechatPublicInstance, WechatWebInstance } from './WechatSDK';
 import AmapSDK from './AmapSDK';
 import QiniuSDK, { QiniuCloudInstance } from './QiniuSDK';
-import SmsSdk, { TencentSmsInstance, AliSmsInstance } from './SmsSdk';
+import SmsSdk, {
+    TencentSmsInstance,
+    AliSmsInstance,
+    CTYunSmsInstance,
+} from './SmsSdk';
 import CTYunSDk, { CTYunInstance } from './CTYunSDK';
 
 export * from './service/amap/Amap';
@@ -18,6 +22,7 @@ export {
     SmsSdk,
     TencentSmsInstance,
     AliSmsInstance,
+    CTYunSmsInstance,
 };
 
 export * from './types';
