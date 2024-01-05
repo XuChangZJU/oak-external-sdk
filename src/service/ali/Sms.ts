@@ -19,6 +19,11 @@ type SendSmsResponse = {
     RequestId: string;
 };
 
+type DescribeSmsTemplateListRequest = {
+    PageIndex: number;
+    PageSize: number;
+};
+
 
 export class AliSmsInstance {
     accessKeyId: string;
@@ -67,16 +72,14 @@ export class AliSmsInstance {
             );
             const { statusCode, body } = data;
             if (statusCode != 200) {
-                throw new Error(
-                    `sendSms接口返回状态码错误，为${statusCode}`
-                );
+                throw new Error(`sendSms接口返回状态码错误，为${statusCode}`);
             }
             return body;
         } catch (error) {
             throw error;
         }
     }
-    async syncTemplate(params: $Dysmsapi20170525.QuerySmsTemplateListRequest) {
+    async syncTemplate(params: DescribeSmsTemplateListRequest) {
         const { PageIndex, PageSize } = params;
 
         try {

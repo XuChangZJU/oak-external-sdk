@@ -1,11 +1,9 @@
 import crypto from 'crypto';
-import { Buffer } from 'buffer';
 import * as querystring from 'querystring';
 import {
     OakExternalException,
     OakNetworkException,
 } from 'oak-domain/lib/types/Exception';
-
 
 type SendSmsRequest = {
     phoneNumber: string; // 接收短信的手机号码。格式：国内短信：无任何前缀的11位手机号码，例如1381111****。多个手机号码使用英文","隔开，最多支持一次提交200个手机号码。
@@ -187,7 +185,10 @@ export class CTYunSmsInstance {
     }
 
     private hmacsha256(data: any, key: Buffer | string) {
-        const hmac = crypto.createHmac('sha1', key).update(data).digest('hex');
+        const hmac = crypto
+            .createHmac('sha256', key)
+            .update(data)
+            .digest('hex');
         return hmac;
     }
 

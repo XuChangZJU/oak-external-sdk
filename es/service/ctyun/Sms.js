@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import { Buffer } from 'buffer';
 import { OakNetworkException, } from 'oak-domain/lib/types/Exception';
 function format(date, layout) {
     function pad(num, digit) {
@@ -108,7 +107,10 @@ export class CTYunSmsInstance {
         return response.json();
     }
     hmacsha256(data, key) {
-        const hmac = crypto.createHmac('sha1', key).update(data).digest('hex');
+        const hmac = crypto
+            .createHmac('sha256', key)
+            .update(data)
+            .digest('hex');
         return hmac;
     }
     sha256(data) {

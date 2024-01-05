@@ -7,6 +7,10 @@ type SendSmsRequest = {
     smsUpExtendCode?: string;
     outId?: string;
 };
+type DescribeSmsTemplateListRequest = {
+    PageIndex: number;
+    PageSize: number;
+};
 export declare class AliSmsInstance {
     accessKeyId: string;
     accessKeySecret: string;
@@ -14,6 +18,6 @@ export declare class AliSmsInstance {
     client: Dysmsapi20170525;
     constructor(accessKeyId: string, accessKeySecret: string, endpoint?: string);
     sendSms(params: SendSmsRequest): Promise<$Dysmsapi20170525.SendSmsResponseBody>;
-    syncTemplate(params: $Dysmsapi20170525.QuerySmsTemplateListRequest): Promise<$Dysmsapi20170525.QuerySmsTemplateListResponseBody>;
+    syncTemplate(params: DescribeSmsTemplateListRequest): Promise<$Dysmsapi20170525.QuerySmsTemplateListResponseBody>;
 }
 export {};
