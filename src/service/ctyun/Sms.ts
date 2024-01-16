@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import * as querystring from 'querystring';
 import {
     OakExternalException,
     OakNetworkException,
