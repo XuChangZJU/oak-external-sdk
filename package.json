@@ -1,6 +1,6 @@
 {
     "name": "oak-external-sdk",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "description": "",
     "author": {
         "name": "XuChang"
@@ -30,7 +30,7 @@
         "aws-sdk": "^2.1499.0",
         "cheerio": "^1.0.0-rc.12",
         "isomorphic-fetch": "^3.0.0",
-        "oak-domain": "^4.3.0",
+        "oak-domain": "file:../oak-domain",
         "tencentcloud-sdk-nodejs": "^4.0.746",
         "ts-md5": "^1.3.1"
     }
